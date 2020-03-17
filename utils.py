@@ -43,7 +43,7 @@ emoji_pattern = re.compile("["
 emoticons = emoticons_happy.union(emoticons_sad)
 
 
-def blob_clean_tweets(tweet):
+def blob_clean_tweets(tweet, clean_analysis=True):
 
     stop_words = set(stopwords.words('english'))
 
@@ -62,7 +62,7 @@ def blob_clean_tweets(tweet):
     word_tokens = blob.words
 
     #filter using NLTK library append it to a string
-    filtered_tweet = [w for w in word_tokens if not w in stop_words]
+    #filtered_tweet = [w for w in word_tokens if not w in stop_words]
     filtered_tweet = []
 
     #looping through conditions
@@ -70,7 +70,16 @@ def blob_clean_tweets(tweet):
         #check tokens against stop words , emoticons and punctuations
         if w not in stop_words and w not in emoticons and w not in string.punctuation:
             filtered_tweet.append(w)
-    return ' '.join(filtered_tweet), blob
+    return ' '.join(filtered_tweet)
+
+
+def blobSentimentAnalyser(text):
+    blob = TextBlob(blob_clean_tweets(text))
+    #pass textBlob method for sentiment calculations
+    Sentiment = blob.sentiment
+
+    #seperate polarity and subjectivity in to two variables
+    return Sentiment.polarity, Sentiment.subjectivity
 
 # ------------------------
 
@@ -93,7 +102,13 @@ def vader_clean_tweets(tweet):
 
     return tweet
 
-def vader_vec_clean_tweets(lst):
+def vaderSentimentAnalyser(text, analyser):
+    new_text = vader_clean_tweets(text)
+
+    scores = analyser.polarity_scores(new_text)
+    return scores
+
+def vec_vader_clean_tweets(lst):
     # remove twitter Return handles (RT @xxx:)
     lst = np.vectorize(remove_pattern)(lst, r"RT @[\w]*:")
     # remove twitter handles (@xxx)
@@ -104,5 +119,23 @@ def vader_vec_clean_tweets(lst):
     lst = np.core.defchararray.replace(lst, r"[^a-zA-Z#]", " ")
     
     return lst
+
+
+def vec_vaderSentimentAnalyser(text_lst, analyser, rename_dict=None):
+    new_text_lst = vec_vader_clean_tweets(text_lst)
+
+    def polarity_scores(text):
+        scores = analyser.polarity_scores(text)
+        
+        if rename_dict is not None:
+            scores[rename_dict['neg']] = scores.pop('neg')
+            scores[rename_dict['neu']] = scores.pop('neu')
+            scores[rename_dict['pos']] = scores.pop('pos')
+            scores[rename_dict['compound']] = scores.pop('compound')
+        return scores
+
+    scores = np.vectorize(polarity_scores)(new_text_lst)
+
+    return scores
 
 # ------------------------
