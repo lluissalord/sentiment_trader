@@ -136,7 +136,7 @@ def tweetsPreprocess(tweets_path, nrows=None):
     raw_df['timestamp'] = raw_df['timestamp'].dt.floor('min')
 
     columns = ['replies', 'likes', 'retweets'] 
-    columns =+ SENTIMENT_COLUMNS
+    columns += SENTIMENT_COLUMNS
 
     print("Aggregating by timestamp")
     agg_df = raw_df.groupby(['timestamp'])[columns].agg(func_dict)
@@ -188,6 +188,7 @@ tweets_path = 'data/tweets_historical.csv'
 prices_path = 'data/bitstampUSD_1-min_data_2012-01-01_to_2019-08-12.csv'
 tweets_df = tweetsPreprocess(tweets_path, nrows=10000)
 prices_df = pricesPreprocess(prices_path)
+all_df = prices_df.merge(tweets_df, how='left', left_index=True, right_index=True)
 # %%
 %%time
 if __name__ == "__main__":
@@ -199,6 +200,9 @@ if __name__ == "__main__":
 
     print("Start pricesPreprocess")
     prices_df = pricesPreprocess(prices_path)
+
+    print("Joining prices and tweets")
+    all_df = prices_df.merge(tweets_df, how='left', left_index=True, right_index=True)
 
 # %%
 
