@@ -255,10 +255,20 @@ if __name__ == "__main__":
     prices_path = 'data/bitstampUSD_1-min_data_2012-01-01_to_2019-08-12.csv'
 
     print("Start tweetsPreprocess")
-    tweets_df = tweetsPreprocess(tweets_path)
+    tweets_df = tweetsPreprocess(
+        tweets_path,
+        freq='H',
+        nrows=None,
+        chunksize=5e5,
+        save_path='data/preprocess/twitter.csv',
+        write_files=True
+    )
 
     print("Start pricesPreprocess")
-    prices_df = pricesPreprocess(prices_path)
+    prices_df = pricesPreprocess(
+        prices_path,
+        freq='H'
+    )
 
     print("Joining prices and tweets")
     all_df = prices_df.merge(tweets_df, how='left', left_index=True, right_index=True)
