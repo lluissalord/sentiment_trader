@@ -9,6 +9,7 @@ from utils import (
     blob_clean_tweets,
     vader_clean_tweets,
 )
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
 import settings
 
@@ -45,14 +46,14 @@ class SentimentStreamListener(tweepy.StreamListener):
 
     def on_status(self, status):
 
-        data = {
+        data = [
             status.created_at,
-            status.user,
+            #status.user,
             status.source,
             status.favorite_count,
             status.retweet_count,
             status.reply_count
-        }
+        ]
 
         raw_text = getText(status)
 
@@ -73,7 +74,7 @@ class SentimentStreamListener(tweepy.StreamListener):
 
         data += [polarity, subjectivity]
 
-        #print(data)
+        print(data)
 
 
     def on_error(self, status_code):
