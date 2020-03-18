@@ -2,3 +2,7 @@ consumer_key = 'YOUR_KEY'
 consumer_secret = 'YOUR_KEY'
 access_key = 'YOUR_KEY'
 access_secret = 'YOUR_KEY'
+
+exchange_name = 'bittrex'
+exchange_public_key = 'YOUR_KEY'
+exchange_secret_key = 'YOUR_KEY'
