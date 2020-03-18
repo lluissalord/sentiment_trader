@@ -233,13 +233,17 @@ def pricesPreprocess(prices_path):
     # Means that the prices is the same as in the previous minute
     df = df.fillna(method='ffill')
 
+    # Use difference with previous price instead of absolute value
+    df['Close'] = df['Close'].diff()
+    df = df.iloc[1:]
+
     return df
 
 # %%
 %%time
 tweets_path = 'data/tweets_historical.csv'
 prices_path = 'data/bitstampUSD_1-min_data_2012-01-01_to_2019-08-12.csv'
-tweets_df = tweetsPreprocess(tweets_path, nrows=1000, chunksize=400)
+tweets_df = tweetsPreprocess(tweets_path, nrows=1000)
 prices_df = pricesPreprocess(prices_path)
 all_df = prices_df.merge(tweets_df, how='left', left_index=True, right_index=True)
 all_df['no_data'] = all_df[tweets_df.columns[0]].isnull()
@@ -252,7 +256,6 @@ if __name__ == "__main__":
     print("Start tweetsPreprocess")
     tweets_df = tweetsPreprocess(tweets_path)
 
-    # TODO: Use Close - Close.shift()
     print("Start pricesPreprocess")
     prices_df = pricesPreprocess(prices_path)
 
