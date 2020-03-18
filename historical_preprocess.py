@@ -16,23 +16,24 @@ TEXTBLOB_COLUMNS = [
     'Subjectivity',
 ]
 
-def fillAllTime(df, freq='min', on=None, start_dt=None, end_dt=None):
+def fillAllTime(df, freq='min', on=None, keep='first', start_dt=None, end_dt=None):
     df_copy = df.copy()
     if on is None:
         df_copy.index = df_copy.index.floor(freq)
+        df_copy = df_copy[~df_copy.index.duplicated(keep=keep)]
         if start_dt is None:
-            start_dt = df.index.values[0]
+            start_dt = df_copy.index.values[0]
         if end_dt is None:
-            end_dt = df.index.values[-1]
+            end_dt = df_copy.index.values[-1]
 
     else:
         df_copy[on] = df_copy[on].dt.floor(freq)
+        df_copy = df_copy.drop_duplicates(on, keep=keep)
         if start_dt is None:
             start_dt = df_copy[on].values[0]
         if end_dt is None:
             end_dt = df_copy[on].values[-1]
-            
-    
+
     # Fill all the seconds between first and last second of data
     all_mins = pd.DataFrame(
         index=pd.date_range(
@@ -91,7 +92,7 @@ def weight_mean(x, df, weight_col, offset=0):
     return np.average(x, weights=weights)
 
 
-def tweetsPreprocess(tweets_path, nrows=None, chunksize=5e5, save_path='data/preprocess/twitter.csv', write_files=True):
+def tweetsPreprocess(tweets_path, freq='min', nrows=None, chunksize=5e5, save_path='data/preprocess/twitter.csv', write_files=True):
     
     print("Loading raw file")
     raw_df_chunks = pd.read_csv(
@@ -144,7 +145,7 @@ def tweetsPreprocess(tweets_path, nrows=None, chunksize=5e5, save_path='data/pre
         )
 
         print("Flooring timestamp")
-        raw_df['timestamp'] = raw_df['timestamp'].dt.floor('min')
+        raw_df['timestamp'] = raw_df['timestamp'].dt.floor(freq)
 
         columns = ['replies', 'likes', 'retweets'] 
         columns += SENTIMENT_COLUMNS
@@ -199,7 +200,7 @@ def tweetsPreprocess(tweets_path, nrows=None, chunksize=5e5, save_path='data/pre
     # Fill all the seconds between first and last second of data
     df = fillAllTime(
         agg_df,
-        freq='min'
+        freq=freq
     )
 
     df['no_tweets'] = df.iloc[:,0].isnull().astype('int8')
@@ -207,7 +208,7 @@ def tweetsPreprocess(tweets_path, nrows=None, chunksize=5e5, save_path='data/pre
 
     return df
 
-def pricesPreprocess(prices_path): 
+def pricesPreprocess(prices_path, freq='min'): 
 
     print("Loading raw file")
     raw_df = pd.read_csv(
@@ -225,7 +226,7 @@ def pricesPreprocess(prices_path):
     # Fill all the seconds between first and last second of data
     df = fillAllTime(
         raw_df,
-        freq='min'
+        freq=freq
     )
 
     print("Filling NA data")
@@ -243,8 +244,8 @@ def pricesPreprocess(prices_path):
 %%time
 tweets_path = 'data/tweets_historical.csv'
 prices_path = 'data/bitstampUSD_1-min_data_2012-01-01_to_2019-08-12.csv'
-tweets_df = tweetsPreprocess(tweets_path, nrows=1000)
-prices_df = pricesPreprocess(prices_path)
+tweets_df = tweetsPreprocess(tweets_path, nrows=1000, freq='H')
+prices_df = pricesPreprocess(prices_path, freq='H')
 all_df = prices_df.merge(tweets_df, how='left', left_index=True, right_index=True)
 all_df['no_data'] = all_df[tweets_df.columns[0]].isnull()
 # %%
