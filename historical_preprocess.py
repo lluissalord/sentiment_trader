@@ -239,6 +239,9 @@ def pricesPreprocess(prices_path, freq='min'):
     df['Close'] = df['Close'].diff()
     df = df.iloc[1:]
 
+    # Rename Volume_(BTC) to Volume_BTC
+    df.columns = ['Close', 'Volume_BTC']
+
     return df
 
 # %%
