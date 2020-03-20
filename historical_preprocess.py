@@ -100,7 +100,8 @@ def tweetsPreprocess(tweets_path, freq='min', nrows=None, chunksize=5e5, save_pa
         sep=';',
         usecols=['timestamp', 'replies', 'likes', 'retweets', 'text'],
         nrows=nrows,
-        chunksize=chunksize
+        chunksize=chunksize,
+        engine='python',
     )
 
     agg_list = []
@@ -247,7 +248,8 @@ prices_path = 'data/bitstampUSD_1-min_data_2012-01-01_to_2019-08-12.csv'
 tweets_df = tweetsPreprocess(tweets_path, nrows=1000, freq='H')
 prices_df = pricesPreprocess(prices_path, freq='H')
 all_df = prices_df.merge(tweets_df, how='left', left_index=True, right_index=True)
-all_df['no_data'] = all_df[tweets_df.columns[0]].isnull()
+all_df['no_data'] = all_df[tweets_df.columns[0]].isnull().astype('int8')
+all_df[df.columns] = all_df[df.columns].fillna(0)
 # %%
 %%time
 if __name__ == "__main__":
@@ -273,4 +275,5 @@ if __name__ == "__main__":
     print("Joining prices and tweets")
     all_df = prices_df.merge(tweets_df, how='left', left_index=True, right_index=True)
     all_df['no_data'] = all_df[tweets_df.columns[0]].isnull()
+    all_df[df.columns] = all_df[df.columns].fillna(0).astype('int8')
     all_df.to_csv('data/all_data.csv', sep='\t')
