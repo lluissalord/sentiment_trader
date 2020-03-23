@@ -280,3 +280,15 @@ if __name__ == "__main__":
     all_df['no_data'] = all_df[tweets_df.columns[0]].isnull()
     all_df[df.columns] = all_df[df.columns].fillna(0).astype('int8')
     all_df.to_csv('data/all_data.csv', sep='\t')
+
+#%%
+if __name__ == "__main__":
+    after_dt = '2018-01'
+    all_df = pd.read_csv('data/all_data.csv', sep='\t', index_col='Timestamp')
+    all_df = all_df.set_index(
+        pd.to_datetime(all_df.index, format='%Y-%m-%d %H:%M:%S', errors='coerce')
+    )
+    reduced_df = all_df[all_df.index > after_dt]
+    reduced_df.to_csv('data/reduced_data.csv', sep='\t')
+
+# %%
