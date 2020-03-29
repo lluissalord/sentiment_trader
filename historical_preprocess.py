@@ -92,7 +92,7 @@ def weight_mean(x, df, weight_col, offset=0):
     return np.average(x, weights=weights)
 
 
-def tweetsPreprocess(tweets_path, freq='min', nrows=None, chunksize=5e5, save_path='data/preprocess/twitter.csv', write_files=True):
+def tweetsPreprocess(tweets_path, freq='min', start_date=None, end_date=None, nrows=None, chunksize=5e5, save_path='data/preprocess/twitter.csv', write_files=True):
     
     print("Loading raw file")
     raw_df_chunks = pd.read_csv(
@@ -111,10 +111,16 @@ def tweetsPreprocess(tweets_path, freq='min', nrows=None, chunksize=5e5, save_pa
         print("Transforming timestamp to datetime format")
         raw_df['timestamp'] = pd.to_datetime(raw_df['timestamp'], format='%Y-%m-%d %H:%M:%S+00')
 
+        print("Filtering rows")
         raw_df = raw_df[
             (raw_df['timestamp'].notnull())
-            & (raw_df['text'].notnull()) 
+            & (raw_df['text'].notnull())
+            & ((start_date is not None) | (raw_df['timestamp'] >= start_date))
+            & ((end_date is not None) | (raw_df['timestamp'] <= end_date))
         ]
+
+        if len(raw_df.index) == 0:
+            continue
 
         print("Adding Sentiment")
         SENTIMENT_COLUMNS = []
@@ -209,7 +215,7 @@ def tweetsPreprocess(tweets_path, freq='min', nrows=None, chunksize=5e5, save_pa
 
     return df
 
-def pricesPreprocess(prices_path, freq='min'): 
+def pricesPreprocess(prices_path, freq='min', start_date=None, end_date=None): 
 
     print("Loading raw file")
     raw_df = pd.read_csv(
@@ -222,6 +228,11 @@ def pricesPreprocess(prices_path, freq='min'):
     raw_df = raw_df.set_index(
         pd.to_datetime(raw_df.index, unit='s')
     )
+
+    raw_df = raw_df[
+        ((start_date is not None) | (raw_df.index >= start_date))
+        & ((end_date is not None) | (raw_df.index <= end_date))
+    ]
 
     print("Filling All Time data")
     # Fill all the seconds between first and last second of data
@@ -259,10 +270,17 @@ if __name__ == "__main__":
     tweets_path = 'data/tweets_historical.csv'
     prices_path = 'data/bitstampUSD_1-min_data_2012-01-01_to_2019-08-12.csv'
 
+    start_date='2019-01-01'
+    end_date='2019-01-05'
+
+    freq = 'min'
+
     print("Start tweetsPreprocess")
     tweets_df = tweetsPreprocess(
         tweets_path,
-        freq='H',
+        freq=freq,
+        start_date=start_date,
+        end_date=end_date,
         nrows=None,
         chunksize=5e5,
         save_path='data/preprocess/twitter.csv',
@@ -272,14 +290,16 @@ if __name__ == "__main__":
     print("Start pricesPreprocess")
     prices_df = pricesPreprocess(
         prices_path,
-        freq='H'
+        freq=freq,
+        start_date=start_date,
+        end_date=end_date,
     )
 
     print("Joining prices and tweets")
     all_df = prices_df.merge(tweets_df, how='left', left_index=True, right_index=True)
     all_df['no_data'] = all_df[tweets_df.columns[0]].isnull()
-    all_df[df.columns] = all_df[df.columns].fillna(0).astype('int8')
-    all_df.to_csv('data/all_data.csv', sep='\t')
+    all_df[tweets_df.columns] = all_df[tweets_df.columns].fillna(0).astype('int8')
+    all_df.to_csv('data/all_data_new.csv', sep='\t')
 
 #%%
 if __name__ == "__main__":
