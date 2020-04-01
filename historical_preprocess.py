@@ -263,8 +263,8 @@ def pricesPreprocess(prices_path, freq='min', start_date=None, end_date=None):
 # %%
 %%time
 if __name__ == "__main__":
-    tweets_path = 'data/tweets_historical.csv'
-    prices_path = 'data/bitstampUSD_1-min_data_2012-01-01_to_2019-08-12.csv'
+    tweets_path = 'data/sources/tweets_historical.csv'
+    prices_path = 'data/sources/bitstampUSD_1-min_data_2012-01-01_to_2019-08-12.csv'
 
     start_date='2019-01-01'
     end_date='2019-01-05'
