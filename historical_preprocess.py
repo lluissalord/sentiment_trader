@@ -4,6 +4,7 @@ import numpy as np
 import time
 import os
 
+# Sentiment column names extracted from VADER process
 VADER_COLUMNS = [
     'Negative',
     'Neutral',
@@ -11,12 +12,15 @@ VADER_COLUMNS = [
     'Compound',
 ]
 
+# Sentiment column names extracted from TextBlob process
 TEXTBLOB_COLUMNS = [
     'Polarity',
     'Subjectivity',
 ]
 
 def fillAllTime(df, freq='min', on=None, keep='first', start_dt=None, end_dt=None):
+    """Creates DataFrame with all the time steps in df[on] or between start_dt and end_dt
+    """
     df_copy = df.copy()
     if on is None:
         df_copy.index = df_copy.index.floor(freq)
@@ -53,6 +57,8 @@ def fillAllTime(df, freq='min', on=None, keep='first', start_dt=None, end_dt=Non
 
 
 def addVaderSentiment(df):
+    """Returns input DataFrame adding VADER sentiment columns
+    """
     from utils import vec_vaderSentimentAnalyser
     from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
@@ -77,6 +83,8 @@ def addVaderSentiment(df):
     return pd.concat([df, new_df], axis=1)
 
 def addTextBlobSentiment(df):
+    """Returns input DataFrame adding TextBlob sentiment columns
+    """
     from utils import blobSentimentAnalyser
 
     sentiment_list = np.vectorize(blobSentimentAnalyser)(df['text'])
@@ -86,6 +94,8 @@ def addTextBlobSentiment(df):
 
 
 def weight_mean(x, df, weight_col, offset=0):
+    """General function to calculate weighted mean depending on 'weight_col'
+    """
     weights = df.loc[x.index, weight_col] + offset
     if sum(weights) == 0:
         return 0
@@ -93,7 +103,8 @@ def weight_mean(x, df, weight_col, offset=0):
 
 
 def tweetsPreprocess(tweets_path, freq='min', start_date=None, end_date=None, nrows=None, chunksize=5e5, save_path='data/preprocess/twitter.csv', write_files=True):
-
+    """Preprocess on tweet historical data which adds sentiment columns and aggregate them depending on different weight columns by frequency
+    """
     AGG_COLUMNS = ['replies', 'likes', 'retweets']
 
     print("Loading raw file")
@@ -137,6 +148,7 @@ def tweetsPreprocess(tweets_path, freq='min', start_date=None, end_date=None, nr
 
         columns = ['timestamp'] + AGG_COLUMNS + SENTIMENT_COLUMNS
 
+        # Use write_files when data is too large to fit in-memory
         if write_files:
             partial_file = os.path.splitext(save_path)
             saved_file = f'{partial_file[0]}_{i}{partial_file[1]}'
@@ -150,6 +162,7 @@ def tweetsPreprocess(tweets_path, freq='min', start_date=None, end_date=None, nr
 
     print("Concatenating all the chunks")
     if write_files:
+        # Join all CSV files by manually adding all in one file
         if os.path.exists(save_path):
             os.remove(save_path)
         fout=open(save_path,"a")
@@ -166,13 +179,18 @@ def tweetsPreprocess(tweets_path, freq='min', start_date=None, end_date=None, nr
                 f.close() # not really needed
         fout.close()
 
+        # Read file with all the chunks together
         all_df = pd.read_csv(save_path, sep='\t', usecols=columns)
         all_df['timestamp'] = pd.to_datetime(all_df['timestamp'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
 
     else:
         all_df = pd.concat(all_list)
 
+    # Floor timestamp at freq level to make sure that aggregation process is done correctly
+    print("Flooring timestamp")
+    all_df['timestamp'] = all_df['timestamp'].dt.floor(freq)
 
+    # Define simple operation to do on AGG_COLUMNS when aggregating by freq
     func_dict = dict(
         zip(
             AGG_COLUMNS,
@@ -180,10 +198,10 @@ def tweetsPreprocess(tweets_path, freq='min', start_date=None, end_date=None, nr
         )
     )
 
+    # Define weighted means to do on SENTIMENT_COLUMNS when aggregating by freq
     replies_mean = lambda x: weight_mean(x, all_df, weight_col='replies', offset=0)
     likes_mean = lambda x: weight_mean(x, all_df, weight_col='likes', offset=0)
     retweets_mean = lambda x: weight_mean(x, all_df, weight_col='retweets', offset=0)
-
     func_dict.update(
         dict(
             zip(
@@ -193,12 +211,10 @@ def tweetsPreprocess(tweets_path, freq='min', start_date=None, end_date=None, nr
         )
     )
 
-    print("Flooring timestamp")
-    all_df['timestamp'] = all_df['timestamp'].dt.floor(freq)
-
     print("Aggregating by timestamp")
     agg_df = all_df.groupby(['timestamp'])[columns].agg(func_dict)
     
+    # As weighted means are defined by lambda functions, these have to be renamed
     agg_df.columns = list(
         agg_df.columns.to_frame()
             .replace('<lambda_0>', 'replies_mean')
@@ -214,13 +230,17 @@ def tweetsPreprocess(tweets_path, freq='min', start_date=None, end_date=None, nr
         freq=freq
     )
 
+    # Add 0/1 column defining each freq when it has not been tweets
     df['no_tweets'] = df.iloc[:,0].isnull().astype('int8')
+
+    # Filling nulls (frequencies where it has not been tweets) with 0's
     df = df.fillna(0)
 
     return df
 
 def pricesPreprocess(prices_path, freq='min', start_date=None, end_date=None): 
-
+    """Preprocess on prices historical data filling up all entries, aggregating by frequency, treating NA and differenciating
+    """
     print("Loading raw file")
     raw_df = pd.read_csv(
         prices_path,
@@ -229,6 +249,8 @@ def pricesPreprocess(prices_path, freq='min', start_date=None, end_date=None):
         index_col='Timestamp',
         parse_dates=True
     )
+
+    # Transform Timestamp, which is expressed in seconds, to index
     raw_df = raw_df.set_index(
         pd.to_datetime(raw_df.index, unit='s')
     )
@@ -293,8 +315,12 @@ if __name__ == "__main__":
 
     print("Joining prices and tweets")
     all_df = prices_df.merge(tweets_df, how='left', left_index=True, right_index=True)
-    all_df['no_data'] = all_df[tweets_df.columns[0]].isnull()
-    all_df[tweets_df.columns] = all_df[tweets_df.columns].fillna(0).astype('int8')
+
+    # TODO: Review if still makes sense or it is always 0
+    # all_df['no_data'] = all_df[tweets_df.columns[0]].isnull()
+    # all_df[tweets_df.columns] = all_df[tweets_df.columns].fillna(0).astype('int8')
+
+    # Store final data
     all_df.to_csv('data/all_data.csv', sep='\t', index_label='Timestamp')
 
 # %%
