@@ -197,7 +197,7 @@ def tweetsPreprocess(tweets_path, freq='min', use_vader=True, use_textBlob=True,
     func_dict = dict(
         zip(
             AGG_COLUMNS,
-            [['sum','mean'],] * 3
+            [['sum','mean'],] * len(AGG_COLUMNS)
         )
     )
 
@@ -216,8 +216,8 @@ def tweetsPreprocess(tweets_path, freq='min', use_vader=True, use_textBlob=True,
         )
 
     print("Aggregating by timestamp")
-    agg_df = all_df.groupby(['timestamp'])[columns].agg(func_dict)
-    
+    agg_df = all_df.groupby(['timestamp']).agg(func_dict)
+
     # As weighted means are defined by lambda functions, these have to be renamed
     agg_df.columns = list(
         agg_df.columns.to_frame()
