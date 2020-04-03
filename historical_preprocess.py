@@ -238,7 +238,7 @@ def tweetsPreprocess(tweets_path, freq='min', start_date=None, end_date=None, nr
 
     return df
 
-def pricesPreprocess(prices_path, freq='min', start_date=None, end_date=None): 
+def pricesPreprocess(prices_path, freq='min', start_date=None, end_date=None, rolling_window=60*24*7): 
     """Preprocess on prices historical data filling up all entries, aggregating by frequency, treating NA and differenciating
     """
     print("Loading raw file")
@@ -277,8 +277,11 @@ def pricesPreprocess(prices_path, freq='min', start_date=None, end_date=None):
     df['Close'] = df['Close'].diff()
     df = df.iloc[1:]
 
+    # Calculate moving average on rolling window
+    df['Close_moving_average'] = df['Close'].rolling(rolling_window).mean()
+
     # Rename Volume_(BTC) to Volume_BTC
-    df.columns = ['Close', 'Volume_BTC']
+    df.columns = ['Close', 'Volume_BTC', 'Close_moving_average']
 
     return df
 
@@ -311,6 +314,7 @@ if __name__ == "__main__":
         freq=freq,
         start_date=start_date,
         end_date=end_date,
+        rolling_window=60*24,
     )
 
     print("Joining prices and tweets")
