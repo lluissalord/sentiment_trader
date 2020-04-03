@@ -102,7 +102,7 @@ def weight_mean(x, df, weight_col, offset=0):
     return np.average(x, weights=weights)
 
 
-def tweetsPreprocess(tweets_path, freq='min', start_date=None, end_date=None, nrows=None, chunksize=5e5, save_path='data/preprocess/twitter.csv', write_files=True):
+def tweetsPreprocess(tweets_path, freq='min', use_vader=True, use_textBlob=True, start_date=None, end_date=None, nrows=None, chunksize=5e5, save_path='data/preprocess/twitter.csv', write_files=True):
     """Preprocess on tweet historical data which adds sentiment columns and aggregate them depending on different weight columns by frequency
     """
     AGG_COLUMNS = ['replies', 'likes', 'retweets']
@@ -137,14 +137,17 @@ def tweetsPreprocess(tweets_path, freq='min', start_date=None, end_date=None, nr
         if len(raw_df.index) == 0:
             continue
 
-        print("Adding Sentiment")
         SENTIMENT_COLUMNS = []
         
-        raw_df = addVaderSentiment(raw_df)
-        SENTIMENT_COLUMNS = list(set(SENTIMENT_COLUMNS + VADER_COLUMNS))
+        if use_vader:
+            print("Adding VADER Sentiment")
+            raw_df = addVaderSentiment(raw_df)
+            SENTIMENT_COLUMNS = list(set(SENTIMENT_COLUMNS + VADER_COLUMNS))
 
-        raw_df = addTextBlobSentiment(raw_df)
-        SENTIMENT_COLUMNS = list(set(SENTIMENT_COLUMNS + TEXTBLOB_COLUMNS))
+        if use_textBlob:
+            print("Adding TextBlob Sentiment")
+            raw_df = addTextBlobSentiment(raw_df)
+            SENTIMENT_COLUMNS = list(set(SENTIMENT_COLUMNS + TEXTBLOB_COLUMNS))
 
         columns = ['timestamp'] + AGG_COLUMNS + SENTIMENT_COLUMNS
 
@@ -198,18 +201,19 @@ def tweetsPreprocess(tweets_path, freq='min', start_date=None, end_date=None, nr
         )
     )
 
-    # Define weighted means to do on SENTIMENT_COLUMNS when aggregating by freq
-    replies_mean = lambda x: weight_mean(x, all_df, weight_col='replies', offset=0)
-    likes_mean = lambda x: weight_mean(x, all_df, weight_col='likes', offset=0)
-    retweets_mean = lambda x: weight_mean(x, all_df, weight_col='retweets', offset=0)
-    func_dict.update(
-        dict(
-            zip(
-                SENTIMENT_COLUMNS,
-                [['mean', replies_mean, likes_mean, retweets_mean],] * len(SENTIMENT_COLUMNS)
+    if use_vader or use_textBlob:
+        # Define weighted means to do on SENTIMENT_COLUMNS when aggregating by freq
+        replies_mean = lambda x: weight_mean(x, all_df, weight_col='replies', offset=0)
+        likes_mean = lambda x: weight_mean(x, all_df, weight_col='likes', offset=0)
+        retweets_mean = lambda x: weight_mean(x, all_df, weight_col='retweets', offset=0)
+        func_dict.update(
+            dict(
+                zip(
+                    SENTIMENT_COLUMNS,
+                    [['mean', replies_mean, likes_mean, retweets_mean],] * len(SENTIMENT_COLUMNS)
+                )
             )
         )
-    )
 
     print("Aggregating by timestamp")
     agg_df = all_df.groupby(['timestamp'])[columns].agg(func_dict)
@@ -300,6 +304,8 @@ if __name__ == "__main__":
     tweets_df = tweetsPreprocess(
         tweets_path,
         freq=freq,
+        use_vader=False,
+        use_textBlob=False,
         start_date=start_date,
         end_date=end_date,
         nrows=None,
