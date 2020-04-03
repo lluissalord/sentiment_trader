@@ -274,14 +274,14 @@ def pricesPreprocess(prices_path, freq='min', start_date=None, end_date=None, ro
     df = df.fillna(method='ffill')
 
     # Use difference with previous price instead of absolute value
-    df['Close'] = df['Close'].diff()
+    df['Close_diff'] = df['Close'].diff()
     df = df.iloc[1:]
 
     # Calculate moving average on rolling window
-    df['Close_moving_average'] = df['Close'].rolling(rolling_window).mean()
+    df['Close_moving_average'] = df['Close_diff'].rolling(rolling_window).mean()
 
     # Rename Volume_(BTC) to Volume_BTC
-    df.columns = ['Close', 'Volume_BTC', 'Close_moving_average']
+    df.columns = ['Close', 'Close_diff', 'Volume_BTC', 'Close_moving_average']
 
     return df
 
