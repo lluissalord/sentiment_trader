@@ -147,6 +147,7 @@ def tweetsPreprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTB
         textBlob_cols = [col for col in sentiment_cols if col in TEXTBLOB_COLUMNS]
         use_textBlob = len(textBlob_cols) > 0
 
+        # TODO: Add moving average on sentiment
         # Process VADER sentiment only if required
         if use_vader:
             print("Adding VADER Sentiment")
@@ -204,6 +205,7 @@ def tweetsPreprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTB
     print("Flooring timestamp")
     all_df['timestamp'] = all_df['timestamp'].dt.floor(freq)
 
+    # TODO: Add parametrizable 'aggregate_func' instead of directly ['sum','mean']
     # Define simple operation to do on 'aggregate_cols' when aggregating by freq
     func_dict = dict(
         zip(
@@ -215,6 +217,7 @@ def tweetsPreprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTB
     if use_vader or use_textBlob:
         # Define weighted means to do on 'sentiment_cols' when aggregating by freq
         weight_cols = aggregate_cols
+        # TODO: Add parametrizable 'agg_sentiment_func' instead of directly ['mean']
         agg_sentiment_func = ['mean']
         replace_dict = {}
         for i, weight_col in enumerate(weight_cols):
