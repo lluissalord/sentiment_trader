@@ -56,7 +56,7 @@ def fillAllTime(df, freq='min', on=None, keep='first', start_dt=None, end_dt=Non
     )
 
 
-def addVaderSentiment(df):
+def addVaderSentiment(df, cols=VADER_COLUMNS):
     """Returns input DataFrame adding VADER sentiment columns
     """
     from utils import vec_vaderSentimentAnalyser
@@ -78,17 +78,21 @@ def addVaderSentiment(df):
     new_df = pd.DataFrame.from_records(
         scores,
         index=df.index
-    )
+    )[cols]
 
     return pd.concat([df, new_df], axis=1)
 
-def addTextBlobSentiment(df):
+def addTextBlobSentiment(df, cols=TEXTBLOB_COLUMNS):
     """Returns input DataFrame adding TextBlob sentiment columns
     """
     from utils import blobSentimentAnalyser
 
     sentiment_list = np.vectorize(blobSentimentAnalyser)(df['text'])
-    new_df = pd.DataFrame(sentiment_list, index=TEXTBLOB_COLUMNS, columns=df.index).T
+    new_df = pd.DataFrame(
+        sentiment_list,
+        index=TEXTBLOB_COLUMNS,
+        columns=df.index
+    ).T[cols]
 
     return pd.concat([df, new_df], axis=1)
 
@@ -102,7 +106,7 @@ def weight_mean(x, df, weight_col, offset=0):
     return np.average(x, weights=weights)
 
 
-def tweetsPreprocess(tweets_path, freq='min', use_vader=True, use_textBlob=True, aggregate_cols=['replies', 'likes', 'retweets'], start_date=None, end_date=None, nrows=None, chunksize=5e5, save_path='data/preprocess/twitter.csv', write_files=True):
+def tweetsPreprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS, aggregate_cols=['replies', 'likes', 'retweets'], start_date=None, end_date=None, nrows=None, chunksize=5e5, save_path='data/preprocess/twitter.csv', write_files=True):
     """Preprocess on tweet historical data which adds sentiment columns and aggregate them depending on different weight columns by frequency
     """
 
@@ -136,19 +140,27 @@ def tweetsPreprocess(tweets_path, freq='min', use_vader=True, use_textBlob=True,
         if len(raw_df.index) == 0:
             continue
 
-        SENTIMENT_COLUMNS = []
-        
+        # Check and store columns used in sentiment_cols
+        vader_cols = [col for col in sentiment_cols if col in VADER_COLUMNS]
+        use_vader = len(vader_cols) > 0
+
+        textBlob_cols = [col for col in sentiment_cols if col in TEXTBLOB_COLUMNS]
+        use_textBlob = len(textBlob_cols) > 0
+
+        # Process VADER sentiment only if required
         if use_vader:
             print("Adding VADER Sentiment")
-            raw_df = addVaderSentiment(raw_df)
-            SENTIMENT_COLUMNS = list(set(SENTIMENT_COLUMNS + VADER_COLUMNS))
+            raw_df = addVaderSentiment(raw_df, vader_cols)
+            sentiment_cols = list(set(sentiment_cols + vader_cols))
 
+        # Process TextBlob sentiment only if required
         if use_textBlob:
             print("Adding TextBlob Sentiment")
-            raw_df = addTextBlobSentiment(raw_df)
-            SENTIMENT_COLUMNS = list(set(SENTIMENT_COLUMNS + TEXTBLOB_COLUMNS))
+            raw_df = addTextBlobSentiment(raw_df, textBlob_cols)
+            sentiment_cols = list(set(sentiment_cols + textBlob_cols))
 
-        columns = ['timestamp'] + aggregate_cols + SENTIMENT_COLUMNS
+        # Summarise all columns which are stored
+        columns = ['timestamp'] + aggregate_cols + sentiment_cols
 
         # Use write_files when data is too large to fit in-memory
         if write_files:
@@ -201,7 +213,7 @@ def tweetsPreprocess(tweets_path, freq='min', use_vader=True, use_textBlob=True,
     )
 
     if use_vader or use_textBlob:
-        # Define weighted means to do on SENTIMENT_COLUMNS when aggregating by freq
+        # Define weighted means to do on 'sentiment_cols' when aggregating by freq
         weight_cols = aggregate_cols
         agg_sentiment_func = ['mean']
         replace_dict = {}
@@ -215,8 +227,8 @@ def tweetsPreprocess(tweets_path, freq='min', use_vader=True, use_textBlob=True,
         func_dict.update(
             dict(
                 zip(
-                    SENTIMENT_COLUMNS,
-                    [agg_sentiment_func,] * len(SENTIMENT_COLUMNS)
+                    sentiment_cols,
+                    [agg_sentiment_func,] * len(sentiment_cols)
                 )
             )
         )
@@ -308,9 +320,9 @@ if __name__ == "__main__":
     tweets_df = tweetsPreprocess(
         tweets_path,
         freq=freq,
-        use_vader=True,
-        use_textBlob=False,
-        aggregate_cols = ['replies', 'likes', 'retweets'],
+        # sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS,
+        sentiment_cols=['Compound', 'Polarity'],
+        aggregate_cols=['replies', 'likes', 'retweets'],
         start_date=start_date,
         end_date=end_date,
         nrows=None,
