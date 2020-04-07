@@ -296,26 +296,46 @@ def pricesPreprocess(prices_path, freq='min', start_date=None, end_date=None, ro
     # Means that the prices is the same as in the previous minute
     df = df.fillna(method='ffill')
 
+    # Rename Volume_(BTC) to Volume_BTC
+    df.rename(
+        {
+            'Volume_(BTC)': 'Volume_BTC'
+        }
+    )
+
+    # Add all the features
+    pricesFeatureExtraction(df, rolling_window)
+
+    return df
+
+
+def pricesFeatureExtraction(df, rolling_window, price_col='Close', eps=1e-4):
+    
     # Use difference with previous price instead of absolute value
-    df['Close_diff'] = df['Close'].diff()
+    df[price_col+'_diff'] = df[price_col].diff()
     df = df.iloc[1:]
 
     # Calculate moving average on rolling window
-    df['Close_moving_average'] = df['Close_diff'].rolling(rolling_window).mean()
+    df[price_col+'_moving_average'] = df[price_col].rolling(rolling_window).mean()
+    df[price_col+'_diff_moving_average'] = df[price_col+'_diff'].rolling(rolling_window).mean()
 
-    # Rename Volume_(BTC) to Volume_BTC
-    df.columns = ['Close', 'Close_diff', 'Volume_BTC', 'Close_moving_average']
+    # Scale on moving average
+    df[price_col+'_scale'] = df[price_col] / (df[price_col+'_moving_average'] + eps)
+    df[price_col+'_diff_scale'] = df[price_col+'_diff'] / (df[price_col+'_diff_moving_average'] + eps)
+    
+    # Normalization on moving average
+    df[price_col+'_norm'] = (df[price_col] - df[price_col+'_moving_average']) / (df[price_col+'_moving_average'] + eps)
+    df[price_col+'_diff_norm'] = (df[price_col+'_diff'] - df[price_col+'_diff_moving_average']) / (df[price_col+'_diff_moving_average'] + eps)
 
     return df
 
 # %%
-%%time
 if __name__ == "__main__":
     tweets_path = 'data/sources/tweets_historical.csv'
     prices_path = 'data/sources/bitstampUSD_1-min_data_2012-01-01_to_2019-08-12.csv'
 
     start_date='2019-01-01'
-    end_date='2019-01-05'
+    end_date='2019-08-11'
 
     freq = 'min'
 
@@ -324,7 +344,7 @@ if __name__ == "__main__":
         tweets_path,
         freq=freq,
         # sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS,
-        sentiment_cols=['Compound', 'Polarity'],
+        # sentiment_cols=['Compound', 'Polarity'],
         aggregate_cols=['replies', 'likes', 'retweets'],
         start_date=start_date,
         end_date=end_date,
