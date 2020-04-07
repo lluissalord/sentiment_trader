@@ -10,6 +10,7 @@ from utils import (
     vader_clean_tweets,
 )
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from textblob import TextBlob
 
 
 # Generalised function to extract text from tweets
@@ -59,10 +60,10 @@ class SentimentStreamListener(tweepy.StreamListener):
         data += [scores['neg'], scores['neu'], scores['pos'], scores['compound']]
 
         # TextBlob process
-        blob_text, blob = blob_clean_tweets(raw_text)
+        blob_text = blob_clean_tweets(raw_text)
 
         # Pass textBlob method for sentiment calculations
-        Sentiment = blob.sentiment
+        Sentiment = TextBlob(blob_text).sentiment
 
         # Seperate polarity and subjectivity in to two variables
         polarity = Sentiment.polarity
@@ -103,3 +104,5 @@ if __name__ == "__main__":
 
     # Apply filter of what should be listening
     sapi.filter(track=['bitcoin'], languages=['en'])
+
+# %%
