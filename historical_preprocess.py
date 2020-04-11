@@ -297,7 +297,7 @@ def pricesPreprocess(prices_path, freq='min', start_date=None, end_date=None, ro
     df = df.fillna(method='ffill')
 
     # Rename Volume_(BTC) to Volume_BTC
-    df.rename(
+    df = df.rename(
         {
             'Volume_(BTC)': 'Volume_BTC'
         }
