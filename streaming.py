@@ -12,6 +12,9 @@ from utils import (
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from textblob import TextBlob
 
+## Interesting link from where extract info
+# https://github.com/shirosaidev/stocksight/blob/master/sentiment.py
+
 
 # Generalised function to extract text from tweets
 def getText(status):
