@@ -262,7 +262,7 @@ def tweetsPreprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTB
 
     return df
 
-# TODO: Aggregate by frequency taking into account columns: open, high, low, close, volume
+
 def pricesPreprocess(prices_path, freq='min', freq_raw='s', timestamp_col='Timestamp', columns_dict=None, start_date=None, end_date=None, rolling_window=60*24*7): 
     """Preprocess on prices historical data filling up all entries, aggregating by frequency, treating NA and differenciating
     """
@@ -300,7 +300,6 @@ def pricesPreprocess(prices_path, freq='min', freq_raw='s', timestamp_col='Times
     # Dictionary columns_dict must have the values of the required_columns
     assert Counter(required_columns) == Counter(list(columns_dict.values())), f'Dictionary columns_dict must have the following values: {required_columns}'
 
-    print(columns_dict)
     # Rename the corresponding columns to 'open', 'high', 'low', 'close' and 'volume'
     raw_df = raw_df.rename(columns=columns_dict)
 
@@ -316,10 +315,25 @@ def pricesPreprocess(prices_path, freq='min', freq_raw='s', timestamp_col='Times
     # Means that the prices is the same as in the previous minute
     df = df.fillna(method='ffill')
 
-    # Add all the features
-    df = pricesFeatureExtraction(df, rolling_window)
+    print(f"Aggregating at {freq} level")
+    # Aggregate by frequency taking into account columns: open, high, low, close, volume
+    agg_df = df.resample(freq).agg(
+        {
+            'open': lambda x: x.iloc[0],
+            'high': 'max',
+            'low': 'min',
+            'close': lambda x: x.iloc[-1],
+            'volume': 'sum'
+        }
+    )
 
-    return df
+    # Only required columns are used
+    agg_df = agg_df[required_columns]
+
+    # Add all the features
+    agg_df = pricesFeatureExtraction(agg_df, rolling_window)
+
+    return agg_df
 
 
 def pricesFeatureExtraction(df, rolling_window, price_col='close', eps=1e-4):
