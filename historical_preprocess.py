@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import time
 import os
+from collections import Counter
 
 # Sentiment column names extracted from VADER process
 VADER_COLUMNS = [
@@ -261,17 +262,15 @@ def tweetsPreprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTB
 
     return df
 
-# TODO: Add and standarise names for columns: open, high, low, close, volume 
 # TODO: Aggregate by frequency taking into account columns: open, high, low, close, volume
-def pricesPreprocess(prices_path, freq='min', start_date=None, end_date=None, rolling_window=60*24*7): 
+def pricesPreprocess(prices_path, freq='min', timestamp_col='Timestamp', columns_dict=None, start_date=None, end_date=None, rolling_window=60*24*7): 
     """Preprocess on prices historical data filling up all entries, aggregating by frequency, treating NA and differenciating
     """
     print("Loading raw file")
     raw_df = pd.read_csv(
         prices_path,
         sep=',',
-        usecols=['Timestamp','Close', 'Volume_(BTC)'],
-        index_col='Timestamp',
+        index_col=timestamp_col,
         parse_dates=True
     )
 
@@ -286,6 +285,25 @@ def pricesPreprocess(prices_path, freq='min', start_date=None, end_date=None, ro
         & ((end_date is None) | (raw_df.index <= end_date))
     ]
 
+    # Generate columns_dict to rename columns in case it does not exist
+    required_columns = ['open', 'high', 'low', 'close', 'volume']
+    if columns_dict is None:
+        columns_dict = {}
+        lower_cols = [col.lower() for col in list(raw_df.columns)]
+        for col in required_columns:
+            for i, lower_col in enumerate(lower_cols):
+                if col in lower_col:
+                    orig_col = list(raw_df.columns)[i]
+                    columns_dict[orig_col] = col
+                    break
+
+    # Dictionary columns_dict must have the values of the required_columns
+    assert Counter(required_columns) == Counter(list(columns_dict.values())), f'Dictionary columns_dict must have the following values: {required_columns}'
+
+    print(columns_dict)
+    # Rename the corresponding columns to 'open', 'high', 'low', 'close' and 'volume'
+    raw_df = raw_df.rename(columns=columns_dict)
+
     print("Filling All Time data")
     # Fill all the seconds between first and last second of data
     df = fillAllTime(
@@ -298,20 +316,13 @@ def pricesPreprocess(prices_path, freq='min', start_date=None, end_date=None, ro
     # Means that the prices is the same as in the previous minute
     df = df.fillna(method='ffill')
 
-    # Rename Volume_(BTC) to Volume_BTC
-    df = df.rename(
-        {
-            'Volume_(BTC)': 'Volume_BTC'
-        }
-    )
-
     # Add all the features
-    pricesFeatureExtraction(df, rolling_window)
+    df = pricesFeatureExtraction(df, rolling_window)
 
     return df
 
 
-def pricesFeatureExtraction(df, rolling_window, price_col='Close', eps=1e-4):
+def pricesFeatureExtraction(df, rolling_window, price_col='close', eps=1e-4):
     
     # Use difference with previous price instead of absolute value
     df[price_col+'_diff'] = df[price_col].diff()
