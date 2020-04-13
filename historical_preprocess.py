@@ -261,6 +261,8 @@ def tweetsPreprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTB
 
     return df
 
+# TODO: Add and standarise names for columns: open, high, low, close, volume 
+# TODO: Aggregate by frequency taking into account columns: open, high, low, close, volume
 def pricesPreprocess(prices_path, freq='min', start_date=None, end_date=None, rolling_window=60*24*7): 
     """Preprocess on prices historical data filling up all entries, aggregating by frequency, treating NA and differenciating
     """
@@ -339,6 +341,8 @@ if __name__ == "__main__":
 
     freq = 'min'
 
+    # TODO: Save tweets sentiment independent of prices and one file per date range and frequency
+
     print("Start tweetsPreprocess")
     tweets_df = tweetsPreprocess(
         tweets_path,
@@ -353,6 +357,8 @@ if __name__ == "__main__":
         save_path='data/preprocess/twitter.csv',
         write_files=False
     )
+
+    # TODO: Save prices independent of tweets and one file per date range and frequency
 
     print("Start pricesPreprocess")
     prices_df = pricesPreprocess(
