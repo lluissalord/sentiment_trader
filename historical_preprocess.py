@@ -389,7 +389,6 @@ if __name__ == "__main__":
         write_files=False
     )
 
-    # TODO: Save prices independent of tweets and one file per date range and frequency
 
     print("Start pricesPreprocess")
     prices_df = pricesPreprocess(
@@ -399,6 +398,8 @@ if __name__ == "__main__":
         end_date=end_date,
         rolling_window=60*24,
     )
+    # Store prices data
+    prices_df.to_csv(f'data/prices_freq-{freq}_{start_date}_{end_date}.csv', sep='\t', index_label='Timestamp')
 
     print("Joining prices and tweets")
     all_df = prices_df.merge(tweets_df, how='left', left_index=True, right_index=True)
