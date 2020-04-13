@@ -263,7 +263,7 @@ def tweetsPreprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTB
     return df
 
 # TODO: Aggregate by frequency taking into account columns: open, high, low, close, volume
-def pricesPreprocess(prices_path, freq='min', timestamp_col='Timestamp', columns_dict=None, start_date=None, end_date=None, rolling_window=60*24*7): 
+def pricesPreprocess(prices_path, freq='min', freq_raw='s', timestamp_col='Timestamp', columns_dict=None, start_date=None, end_date=None, rolling_window=60*24*7): 
     """Preprocess on prices historical data filling up all entries, aggregating by frequency, treating NA and differenciating
     """
     print("Loading raw file")
@@ -276,7 +276,7 @@ def pricesPreprocess(prices_path, freq='min', timestamp_col='Timestamp', columns
 
     # Transform Timestamp, which is expressed in seconds, to index
     raw_df = raw_df.set_index(
-        pd.to_datetime(raw_df.index, unit='s')
+        pd.to_datetime(raw_df.index, unit=freq_raw)
     )
 
     # Filter to tret only between start_date and end_date
@@ -308,7 +308,7 @@ def pricesPreprocess(prices_path, freq='min', timestamp_col='Timestamp', columns
     # Fill all the seconds between first and last second of data
     df = fillAllTime(
         raw_df,
-        freq=freq
+        freq=freq_raw
     )
 
     print("Filling NA data")
@@ -354,20 +354,20 @@ if __name__ == "__main__":
 
     # TODO: Save tweets sentiment independent of prices and one file per date range and frequency
 
-    print("Start tweetsPreprocess")
-    tweets_df = tweetsPreprocess(
-        tweets_path,
-        freq=freq,
-        # sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS,
-        # sentiment_cols=['Compound', 'Polarity'],
-        aggregate_cols=['replies', 'likes', 'retweets'],
-        start_date=start_date,
-        end_date=end_date,
-        nrows=None,
-        chunksize=5e5,
-        save_path='data/preprocess/twitter.csv',
-        write_files=False
-    )
+    # print("Start tweetsPreprocess")
+    # tweets_df = tweetsPreprocess(
+    #     tweets_path,
+    #     freq=freq,
+    #     # sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS,
+    #     # sentiment_cols=['Compound', 'Polarity'],
+    #     aggregate_cols=['replies', 'likes', 'retweets'],
+    #     start_date=start_date,
+    #     end_date=end_date,
+    #     nrows=None,
+    #     chunksize=5e5,
+    #     save_path='data/preprocess/twitter.csv',
+    #     write_files=False
+    # )
 
     # TODO: Save prices independent of tweets and one file per date range and frequency
 
