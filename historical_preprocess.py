@@ -358,30 +358,33 @@ def pricesFeatureExtraction(df, rolling_window, price_col='close', eps=1e-4):
 
 # %%
 if __name__ == "__main__":
+    # Scrapped from twitters from 2016-01-01 to 2019-03-29, Collecting Tweets containing Bitcoin or BTC
     tweets_path = 'data/sources/tweets_historical.csv'
+
+    # Historical bitcoin market data at 1-min intervals
     prices_path = 'data/sources/bitstampUSD_1-min_data_2012-01-01_to_2019-08-12.csv'
 
     start_date='2019-01-01'
-    end_date='2019-08-11'
+    end_date='2019-03-28'
 
     freq = 'min'
 
     # TODO: Save tweets sentiment independent of prices and one file per date range and frequency
 
-    # print("Start tweetsPreprocess")
-    # tweets_df = tweetsPreprocess(
-    #     tweets_path,
-    #     freq=freq,
-    #     # sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS,
-    #     # sentiment_cols=['Compound', 'Polarity'],
-    #     aggregate_cols=['replies', 'likes', 'retweets'],
-    #     start_date=start_date,
-    #     end_date=end_date,
-    #     nrows=None,
-    #     chunksize=5e5,
-    #     save_path='data/preprocess/twitter.csv',
-    #     write_files=False
-    # )
+    print("Start tweetsPreprocess")
+    tweets_df = tweetsPreprocess(
+        tweets_path,
+        freq=freq,
+        # sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS,
+        # sentiment_cols=['Compound', 'Polarity'],
+        aggregate_cols=['replies', 'likes', 'retweets'],
+        start_date=start_date,
+        end_date=end_date,
+        nrows=None,
+        chunksize=5e5,
+        save_path='data/preprocess/twitter.csv',
+        write_files=False
+    )
 
     # TODO: Save prices independent of tweets and one file per date range and frequency
 
