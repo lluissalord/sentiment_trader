@@ -263,7 +263,7 @@ def tweetsPreprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTB
     return df
 
 
-def pricesPreprocess(prices_path, freq='min', freq_raw='s', timestamp_col='Timestamp', columns_dict=None, start_date=None, end_date=None, rolling_window=60*24*7): 
+def pricesPreprocess(prices_path, freq='min', freq_raw='min', timestamp_col='Timestamp', timestamp_unit='s', columns_dict=None, start_date=None, end_date=None, rolling_window=60*24*7): 
     """Preprocess on prices historical data filling up all entries, aggregating by frequency, treating NA and differenciating
     """
     print("Loading raw file")
@@ -276,7 +276,7 @@ def pricesPreprocess(prices_path, freq='min', freq_raw='s', timestamp_col='Times
 
     # Transform Timestamp, which is expressed in seconds, to index
     raw_df = raw_df.set_index(
-        pd.to_datetime(raw_df.index, unit=freq_raw)
+        pd.to_datetime(raw_df.index, unit=timestamp_unit)
     )
 
     # Filter to tret only between start_date and end_date
@@ -315,17 +315,20 @@ def pricesPreprocess(prices_path, freq='min', freq_raw='s', timestamp_col='Times
     # Means that the prices is the same as in the previous minute
     df = df.fillna(method='ffill')
 
-    print(f"Aggregating at {freq} level")
-    # Aggregate by frequency taking into account columns: open, high, low, close, volume
-    agg_df = df.resample(freq).agg(
-        {
-            'open': lambda x: x.iloc[0],
-            'high': 'max',
-            'low': 'min',
-            'close': lambda x: x.iloc[-1],
-            'volume': 'sum'
-        }
-    )
+    if freq_raw != freq:
+        print(f"Aggregating at {freq} level")
+        # Aggregate by frequency taking into account columns: open, high, low, close, volume
+        agg_df = df.resample(freq).agg(
+            {
+                'open': lambda x: x.iloc[0],
+                'high': 'max',
+                'low': 'min',
+                'close': lambda x: x.iloc[-1],
+                'volume': 'sum'
+            }
+        )
+    else:
+        agg_df = df
 
     # Only required columns are used
     agg_df = agg_df[required_columns]
