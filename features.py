@@ -1,3 +1,6 @@
+import pickle
+import os
+
 import numpy as np
 import pandas as pd
 import pandas_ta as ta
@@ -201,7 +204,7 @@ def normalizeFeatures(data, ranges_dict):
     return data
 
 
-def generateTAFeatures(data, exclude_ind=[], args=None, drop_na_rows=True):
+def generateTAFeatures(data, exclude_ind=[], args=None):
     # Indicators not posible to use 'short_run' and 'cross'
     not_ind = ['long_run', 'short_run', 'cross']
     not_ind.append('ichimoku') # Output has to be treaten different because is returning two DataFrames
@@ -225,8 +228,47 @@ def generateTAFeatures(data, exclude_ind=[], args=None, drop_na_rows=True):
         print(f'{i} out of {n_args} features', end='\r')
         data.ta(kind=ind, **arg)
 
-    if drop_na_rows:
-        print(f'Dropping {data.isnull().any(axis=1).sum()} rows because of NaN values')
-        data = data[data.notnull().all(axis=1)]
+    return data
+
+
+def cleanNan(data):
+    # Drop columns which have all columns as NaN
+    remove_cols = data.dtypes[data.isnull().all()].index
+    if len(remove_cols) > 0:
+        data = data.drop(remove_cols, axis=1)
+        print(f'The following columns have been removed: {list(remove_cols)}')
+
+    # Drop rows which have at least one NaN
+    print(f'Dropping {data.isnull().any(axis=1).sum()} rows because of NaN values')
+    data = data[data.notnull().all(axis=1)]
 
     return data
+
+
+def main(prices_path, ranges_dicth_path, save_path, onlyRead=True, cleanNans=True):
+
+    if onlyRead and os.path.exists(ranges_dicth_path) and os.path.exists(save_path):
+        ranges_dict_path = 'data\\ranges_dict.pickle'
+
+        data = pd.read_csv('.\\data\\featured_prices.csv', sep='\t')
+        data = data.drop('Timestamp', axis=1)
+        with open(ranges_dict_path, 'rb') as f:
+            ranges_dict = pickle.load(f)
+
+    else:
+
+        data_csv = '.\\data\\prices_freq-min_2019-01-01_2019-03-28.csv'
+        data = pd.read_csv(data_csv, sep='\t', index_col='Timestamp', parse_dates=True)
+        cols = ['open', 'high', 'low', 'close', 'volume']
+        data = data[cols]
+
+        data = generateTAFeatures(data, exclude_ind=[], args=None)
+        ranges_dict = classifyColsByRanges(data)
+        data = normalizeFeatures(data, ranges_dict)
+        data = cleanNan(data)
+        data.to_csv('data\\featured_prices.csv', sep='\t', index_label='Timestamp')
+
+        with open(ranges_dict_path, 'wb') as f:
+            pickle.dump(ranges_dict, f)
+
+    return data, ranges_dict
