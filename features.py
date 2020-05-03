@@ -245,28 +245,40 @@ def cleanNan(data):
     return data
 
 
-def main(prices_path, ranges_dicth_path, save_path, onlyRead=True, cleanNans=True):
+def main(prices_path, ranges_dict_path, save_path, freq=None, onlyRead=True, cleanNans=True, exclude_ind=[], args=None):
 
-    if onlyRead and os.path.exists(ranges_dicth_path) and os.path.exists(save_path):
+    if onlyRead and os.path.exists(ranges_dict_path) and os.path.exists(save_path):
         ranges_dict_path = 'data\\ranges_dict.pickle'
 
-        data = pd.read_csv('.\\data\\featured_prices.csv', sep='\t')
+        data = pd.read_csv(save_path, sep='\t')
         data = data.drop('Timestamp', axis=1)
         with open(ranges_dict_path, 'rb') as f:
             ranges_dict = pickle.load(f)
 
     else:
 
-        data_csv = '.\\data\\prices_freq-min_2019-01-01_2019-03-28.csv'
-        data = pd.read_csv(data_csv, sep='\t', index_col='Timestamp', parse_dates=True)
+        print('Loading data...')
+        data = pd.read_csv(prices_path, sep='\t', index_col='Timestamp', parse_dates=True)
         cols = ['open', 'high', 'low', 'close', 'volume']
         data = data[cols]
 
-        data = generateTAFeatures(data, exclude_ind=[], args=None)
+        if freq != None:
+            data = data.resample(freq).agg(
+                {
+                    'open': lambda x: x.iloc[0],
+                    'close': lambda x: x.iloc[-1],
+                    'high': 'max',
+                    'low': 'min',
+                    'volume': 'sum',
+                }
+            )
+
+        print('Generating TA features...')
+        data = generateTAFeatures(data, exclude_ind, args)
         ranges_dict = classifyColsByRanges(data)
         data = normalizeFeatures(data, ranges_dict)
         data = cleanNan(data)
-        data.to_csv('data\\featured_prices.csv', sep='\t', index_label='Timestamp')
+        data.to_csv(save_path, sep='\t', index_label='Timestamp')
 
         with open(ranges_dict_path, 'wb') as f:
             pickle.dump(ranges_dict, f)
