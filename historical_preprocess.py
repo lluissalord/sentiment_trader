@@ -228,109 +228,10 @@ def tweetsPreprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTB
     return df
 
 
-def pricesPreprocess(prices_path, freq='min', freq_raw='min', timestamp_col='Timestamp', timestamp_unit='s', columns_dict=None, start_date=None, end_date=None, rolling_window=60*24*7): 
-    """Preprocess on prices historical data filling up all entries, aggregating by frequency, treating NA and differenciating
-    """
-    print("Loading raw file")
-    raw_df = pd.read_csv(
-        prices_path,
-        sep=',',
-        index_col=timestamp_col,
-        parse_dates=True
-    )
-
-    # Transform Timestamp, which is expressed in seconds, to index
-    raw_df = raw_df.set_index(
-        pd.to_datetime(raw_df.index, unit=timestamp_unit)
-    )
-
-    # Filter to tret only between start_date and end_date
-    raw_df = raw_df[
-        ((start_date is None) | (raw_df.index >= start_date))
-        & ((end_date is None) | (raw_df.index <= end_date))
-    ]
-
-    # Generate columns_dict to rename columns in case it does not exist
-    required_columns = ['open', 'high', 'low', 'close', 'volume']
-    if columns_dict is None:
-        columns_dict = {}
-        lower_cols = [col.lower() for col in list(raw_df.columns)]
-        for col in required_columns:
-            for i, lower_col in enumerate(lower_cols):
-                if col in lower_col:
-                    orig_col = list(raw_df.columns)[i]
-                    columns_dict[orig_col] = col
-                    break
-
-    # Dictionary columns_dict must have the values of the required_columns
-    assert Counter(required_columns) == Counter(list(columns_dict.values())), f'Dictionary columns_dict must have the following values: {required_columns}'
-
-    # Rename the corresponding columns to 'open', 'high', 'low', 'close' and 'volume'
-    raw_df = raw_df.rename(columns=columns_dict)
-
-    print("Filling All Time data")
-    # Fill all the seconds between first and last second of data
-    df = fillAllTime(
-        raw_df,
-        freq=freq_raw
-    )
-
-    print("Filling NA data")
-    # As null data is due to no transaction on that minute (or in minimal cases shutdown of API)
-    # Means that the prices is the same as in the previous minute
-    df = df.fillna(method='ffill')
-
-    if freq_raw != freq:
-        print(f"Aggregating at {freq} level")
-        # Aggregate by frequency taking into account columns: open, high, low, close, volume
-        agg_df = df.resample(freq).agg(
-            {
-                'open': lambda x: x.iloc[0],
-                'high': 'max',
-                'low': 'min',
-                'close': lambda x: x.iloc[-1],
-                'volume': 'sum'
-            }
-        )
-    else:
-        agg_df = df
-
-    # Only required columns are used
-    agg_df = agg_df[required_columns]
-
-    # Add all the features
-    agg_df = pricesFeatureExtraction(agg_df, rolling_window)
-
-    return agg_df
-
-
-def pricesFeatureExtraction(df, rolling_window, price_col='close', eps=1e-4):
-    
-    # Use difference with previous price instead of absolute value
-    df[price_col+'_diff'] = df[price_col].diff()
-    df = df.iloc[1:]
-
-    # Calculate moving average on rolling window
-    df[price_col+'_moving_average'] = df[price_col].rolling(rolling_window).mean()
-    df[price_col+'_diff_moving_average'] = df[price_col+'_diff'].rolling(rolling_window).mean()
-
-    # Scale on moving average
-    df[price_col+'_scale'] = df[price_col] / (df[price_col+'_moving_average'] + eps)
-    df[price_col+'_diff_scale'] = df[price_col+'_diff'] / (df[price_col+'_diff_moving_average'] + eps)
-    
-    # Normalization on moving average
-    df[price_col+'_norm'] = (df[price_col] - df[price_col+'_moving_average']) / (df[price_col+'_moving_average'] + eps)
-    df[price_col+'_diff_norm'] = (df[price_col+'_diff'] - df[price_col+'_diff_moving_average']) / (df[price_col+'_diff_moving_average'] + eps)
-
-    return df
-
 # %%
 if __name__ == "__main__":
     # Scrapped from twitters from 2016-01-01 to 2019-03-29, Collecting Tweets containing Bitcoin or BTC
     tweets_path = 'data/sources/tweets_historical.csv'
-
-    # Historical bitcoin market data at 1-min intervals
-    prices_path = 'data/sources/bitstampUSD_1-min_data_2012-01-01_to_2019-08-12.csv'
 
     start_date='2019-01-01'
     end_date='2019-03-28'
@@ -353,27 +254,3 @@ if __name__ == "__main__":
         save_path='data/preprocess/twitter.csv',
         write_files=False
     )
-
-
-    print("Start pricesPreprocess")
-    prices_df = pricesPreprocess(
-        prices_path,
-        freq=freq,
-        start_date=start_date,
-        end_date=end_date,
-        rolling_window=60*24,
-    )
-    # Store prices data
-    prices_df.to_csv(f'data/prices_freq-{freq}_{start_date}_{end_date}.csv', sep='\t', index_label='Timestamp')
-
-    print("Joining prices and tweets")
-    all_df = prices_df.merge(tweets_df, how='left', left_index=True, right_index=True)
-
-    # TODO: Review if still makes sense or it is always 0
-    # all_df['no_data'] = all_df[tweets_df.columns[0]].isnull()
-    # all_df[tweets_df.columns] = all_df[tweets_df.columns].fillna(0).astype('int8')
-
-    # Store final data
-    all_df.to_csv('data/all_data.csv', sep='\t', index_label='Timestamp')
-
-# %%

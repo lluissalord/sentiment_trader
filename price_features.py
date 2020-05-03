@@ -1,5 +1,8 @@
 import pickle
 import os
+from collections import Counter
+
+from utils import fillAllTime
 
 import numpy as np
 import pandas as pd
@@ -245,7 +248,7 @@ def cleanNan(data):
     return data
 
 
-def main(prices_path, ranges_dict_path, save_path, freq=None, onlyRead=True, cleanNans=True, exclude_ind=[], args=None):
+def main(prices_path, ranges_dict_path, save_path, onlyRead=True, cleanNans=True, exclude_ind=[], args=None, freq='min', freq_raw='min', sep=',', timestamp_col=None, timestamp_unit='s', start_date=None, end_date=None, columns_dict=None):
 
     if onlyRead and os.path.exists(ranges_dict_path) and os.path.exists(save_path):
         ranges_dict_path = 'data\\ranges_dict.pickle'
@@ -258,20 +261,77 @@ def main(prices_path, ranges_dict_path, save_path, freq=None, onlyRead=True, cle
     else:
 
         print('Loading data...')
-        data = pd.read_csv(prices_path, sep='\t', index_col='Timestamp', parse_dates=True)
-        cols = ['open', 'high', 'low', 'close', 'volume']
-        data = data[cols]
+        parse_dates = timestamp_col is not None
 
-        if freq != None:
-            data = data.resample(freq).agg(
+        raw_df = pd.read_csv(
+            prices_path,
+            sep=sep,
+            index_col=timestamp_col,
+            parse_dates=parse_dates
+        )
+
+        # Transform Timestamp, which is expressed in seconds, to index
+        raw_df = raw_df.set_index(
+            pd.to_datetime(raw_df.index, unit=timestamp_unit)
+        )
+
+        # Filter to tret only between start_date and end_date
+        if start_date is None:
+            start_date = raw_df.index.min()
+        if end_date is None:
+            end_date = raw_df.index.max()
+        raw_df = raw_df[
+            (raw_df.index >= start_date)
+            & (raw_df.index <= end_date)
+        ]
+
+        # Generate columns_dict to rename columns in case it does not exist
+        required_columns = ['open', 'high', 'low', 'close', 'volume']
+        if columns_dict is None:
+            columns_dict = {}
+            lower_cols = [col.lower() for col in list(raw_df.columns)]
+            for col in required_columns:
+                for i, lower_col in enumerate(lower_cols):
+                    if col in lower_col:
+                        orig_col = list(raw_df.columns)[i]
+                        columns_dict[orig_col] = col
+                        break
+
+        # Dictionary columns_dict must have the values of the required_columns
+        assert Counter(required_columns) == Counter(list(columns_dict.values())), f'Dictionary columns_dict must have the following values: {required_columns}'
+
+        # Rename the corresponding columns to 'open', 'high', 'low', 'close' and 'volume'
+        raw_df = raw_df.rename(columns=columns_dict)
+
+        print("Filling All Time data")
+        # Fill all the seconds between first and last second of data
+        df = fillAllTime(
+            raw_df,
+            freq=freq_raw
+        )
+
+        print("Filling NA data")
+        # As null data is due to no transaction on that minute (or in minimal cases shutdown of API)
+        # Means that the prices is the same as in the previous minute
+        df = df.fillna(method='ffill')
+
+        if freq_raw != freq:
+            print(f"Aggregating from {freq_raw} to {freq} level")
+            # Aggregate by frequency taking into account columns: open, high, low, close, volume
+            data = df.resample(freq).agg(
                 {
                     'open': lambda x: x.iloc[0],
-                    'close': lambda x: x.iloc[-1],
                     'high': 'max',
                     'low': 'min',
-                    'volume': 'sum',
+                    'close': lambda x: x.iloc[-1],
+                    'volume': 'sum'
                 }
             )
+        else:
+            data = df
+
+        # Only required columns are used
+        data = data[required_columns]
 
         print('Generating TA features...')
         data = generateTAFeatures(data, exclude_ind, args)
