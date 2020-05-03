@@ -249,7 +249,9 @@ def cleanNan(data):
 
 
 def main(prices_path, ranges_dict_path, save_path, onlyRead=True, cleanNans=True, exclude_ind=[], args=None, freq='min', freq_raw='min', sep=',', timestamp_col=None, timestamp_unit='s', start_date=None, end_date=None, columns_dict=None):
-
+    """Preprocess on prices historical data filling up all entries, aggregating by frequency, treating NA and differenciating
+    """
+    
     if onlyRead and os.path.exists(ranges_dict_path) and os.path.exists(save_path):
         ranges_dict_path = 'data\\ranges_dict.pickle'
 
