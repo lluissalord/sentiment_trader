@@ -3,3 +3,4 @@
 data/
 settings.py
 logs/
+.ipynb_checkpoints/
