@@ -140,3 +140,40 @@ def vec_vaderSentimentAnalyser(text_lst, analyser, rename_dict=None):
     return scores
 
 # ------------------------
+
+def fillAllTime(df, freq='min', on=None, keep='first', start_dt=None, end_dt=None):
+    """Creates DataFrame with all the time steps in df[on] or between start_dt and end_dt
+    """
+    df_copy = df.copy()
+    if on is None:
+        df_copy.index = df_copy.index.floor(freq)
+        df_copy = df_copy[~df_copy.index.duplicated(keep=keep)]
+        if start_dt is None:
+            start_dt = df_copy.index.values[0]
+        if end_dt is None:
+            end_dt = df_copy.index.values[-1]
+
+    else:
+        df_copy[on] = df_copy[on].dt.floor(freq)
+        df_copy = df_copy.drop_duplicates(on, keep=keep)
+        if start_dt is None:
+            start_dt = df_copy[on].values[0]
+        if end_dt is None:
+            end_dt = df_copy[on].values[-1]
+
+    # Fill all the seconds between first and last second of data
+    all_mins = pd.DataFrame(
+        index=pd.date_range(
+            start=start_dt,
+            end=end_dt,
+            freq=freq
+        )
+    )
+
+    return all_mins.merge(
+        df_copy,
+        how='left',
+        left_index=True,
+        right_index=on is None,
+        right_on=on,
+    )
