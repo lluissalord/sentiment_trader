@@ -27,10 +27,11 @@ class OwnStocksEnv(StocksEnv):
         self.max_steps_per_episode = steps_per_episode
         self.min_steps_per_episode = min_steps_per_episode
         self.is_training = is_training
-        self.max_possible_profit_df = self.max_possible_profit()
 
         self.trade_fee_bid_percent = 0.0 # 0.01  # unit
         self.trade_fee_ask_percent = 0.0 # 0.005  # unit
+
+        self.max_possible_profit_df = self.max_possible_profit()
 
         self.position_as_observation = position_as_observation
         self.shape = (window_size, self.signal_features.shape[1] + int(position_as_observation))
@@ -94,16 +95,15 @@ class OwnStocksEnv(StocksEnv):
         # TODO: Check if should be this tick or the previous one
         max_possible_revenue = self.max_possible_profit_df.loc[self._current_tick, 'max_profit'] - 1
         revenue = (info['total_profit'] - 1)
-        if max_possible_revenue > 0:
-            if revenue >= 0:
-                reward = revenue / max_possible_revenue
-            else:
-                reward = 0
-        # TODO: Check if this case is not posible
-        elif max_possible_revenue < 0:
-            reward = 0
+        if max_possible_revenue > 0 and revenue >= 0:
+            reward = revenue / max_possible_revenue
+        # TODO: Check if it is good to have this behaviour or if it will impact too much on not buy/sell in a lot of moments
+        elif max_possible_revenue == 0 and revenue == 0:
+            reward = 1
+        # TODO: Check if use this or better to set to 0
         else:
-            reward = revenue
+            # reward = revenue
+            reward = 0
 
         # Normalize according to the number of steps of this episode
         reward /= (self._end_tick - self._start_tick)
@@ -146,24 +146,20 @@ class OwnStocksEnv(StocksEnv):
         max_possible_profit_df.loc[current_tick, 'max_profit'] = profit
 
         while current_tick <= self._end_tick:
-            position = None
             if self.prices[current_tick] < self.prices[current_tick - 1]:
                 while (current_tick <= self._end_tick and
                        self.prices[current_tick] < self.prices[current_tick - 1]): 
                     current_tick += 1
-                position = Positions.Short
             else:
                 while (current_tick <= self._end_tick and
                        self.prices[current_tick] >= self.prices[current_tick - 1]):
-                    current_tick += 1
-                position = Positions.Long
+                    
+                    shares = (profit * (1 - self.trade_fee_ask_percent)) / self.prices[last_trade_tick]
+                    temp_profit = (shares * (1 - self.trade_fee_bid_percent)) * self.prices[current_tick]
+                    max_possible_profit_df.loc[current_tick, 'max_profit'] = temp_profit
 
-            if position == Positions.Long:
-                current_price = self.prices[current_tick - 1]
-                last_trade_price = self.prices[last_trade_tick]
-                shares = profit / last_trade_price
-                profit = shares * current_price
-                max_possible_profit_df.loc[current_tick, 'max_profit'] = profit
+                    current_tick += 1
+                profit = temp_profit
             last_trade_tick = current_tick - 1
 
         max_possible_profit_df = max_possible_profit_df.fillna(method='ffill')
