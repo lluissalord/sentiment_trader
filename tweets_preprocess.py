@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import time
 import os
+import glob
 from collections import Counter
 
 from utils import fillAllTime
@@ -72,7 +73,7 @@ def weight_mean(x, df, weight_col, offset=0):
     return np.average(x, weights=weights)
 
 
-def tweetsPreprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS, aggregate_cols=['replies', 'likes', 'retweets'], start_date=None, end_date=None, nrows=None, chunksize=5e5, save_path='data/preprocess/twitter.csv', write_files=True):
+def tweetsPreprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS, aggregate_cols=['replies', 'likes', 'retweets'], start_date=None, end_date=None, nrows=None, chunksize=5e5, save_path='data/preprocess/twitter.csv', write_files=True, save_final_df=True):
     """Preprocess on tweet historical data which adds sentiment columns and aggregate them depending on different weight columns by frequency
     """
 
@@ -95,6 +96,10 @@ def tweetsPreprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTB
 
         print("Filtering rows")
         # Filter to tret only valid data between start_date and end_date
+        min_time = raw_df['timestamp'].min()
+        max_time = raw_df['timestamp'].max()
+        print(f'Min timestamp {min_time}, Max timestamp {max_time}')
+
         raw_df = raw_df[
             (raw_df['timestamp'].notnull())
             & (raw_df['text'].notnull())
@@ -164,6 +169,11 @@ def tweetsPreprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTB
         all_df = pd.read_csv(save_path, sep='\t', usecols=columns)
         all_df['timestamp'] = pd.to_datetime(all_df['timestamp'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
 
+        # Remove temporary files
+        for f in saved_files:
+            os.remove(f)
+        os.remove(save_path)
+
     else:
         all_df = pd.concat(all_list)
 
@@ -224,6 +234,11 @@ def tweetsPreprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTB
 
     # Filling nulls (frequencies where it has not been tweets) with 0's
     df = df.fillna(0)
+
+    if save_final_df:
+        partial_file = os.path.splitext(save_path)
+        save_final_path = f'{partial_file[0]}_{start_date}_-_{end_date}{partial_file[1]}'
+        df.to_csv(save_final_path, sep='\t', index_label='timestamp')
 
     return df
 

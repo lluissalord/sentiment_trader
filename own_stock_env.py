@@ -4,11 +4,14 @@ import numpy as np
 from gym import spaces
 from gym_anytrading.envs import TradingEnv, StocksEnv, Actions, Positions
 
+REVENUE_REWARD = 1
+PRICE_REWARD = 2
+
 # TODO: Normalize somehow the reward to be more standard between runs, independent on the data is processing
 # TODO: Plot training info during training to be able to track it
 class OwnStocksEnv(StocksEnv):
 
-    def __init__(self, df, window_size, frame_bound, steps_per_episode, is_training, position_as_observation=True, constant_step=False, min_steps_per_episode=2, price_column='close', feature_columns=None, seed=None):
+    def __init__(self, df, window_size, frame_bound, steps_per_episode, is_training, position_as_observation=True, constant_step=False, min_steps_per_episode=2, reward_type=REVENUE_REWARD, max_final_reward=100, max_step_reward=1, price_column='close', feature_columns=None, seed=None):
 
         self.price_column = price_column
         
@@ -39,6 +42,11 @@ class OwnStocksEnv(StocksEnv):
 
         self.constant_step = constant_step
 
+        self.max_final_reward = max_final_reward
+        self.max_step_reward = max_step_reward
+
+        self.reward_type = reward_type
+
     def _process_data(self):
         start = self.frame_bound[0] - self.window_size
         end = self.frame_bound[1]
@@ -67,50 +75,36 @@ class OwnStocksEnv(StocksEnv):
 
         return super().reset()
 
-    def step(self, action):
-        observation, reward, done, info = super().step(action)
-        #print(observation, done, info)
-
-        # TODO: Check if better use only final reward or step_rewards
-        # reward = 0
-        # if done:
-        #     max_possible_revenue = self.max_possible_profit() - 1
-        #     revenue = (info['total_profit'] - 1)
-        #     if max_possible_revenue > 0:
-        #         if revenue >= 0:
-        #             reward = revenue / max_possible_revenue
-        #         else:
-        #             reward = 0
-        #     elif max_possible_revenue < 0:
-        #         reward = 0
-        #     else:
-        #         reward = revenue
-        #     # TODO: Should this be modified?
-        #     # info = dict(
-        #     #     total_reward = self._total_reward,
-        #     #     total_profit = self._total_profit,
-        #     #     position = self._position.value
-        #     # )
-
+    def calculate_revenue_ratio(self):
         # TODO: Check if should be this tick or the previous one
         max_possible_revenue = self.max_possible_profit_df.loc[self._current_tick, 'max_profit'] - 1
-        revenue = (info['total_profit'] - 1)
+        revenue = self._total_profit - 1
         if max_possible_revenue > 0 and revenue >= 0:
-            reward = revenue / max_possible_revenue
+            revenue_ratio = revenue / max_possible_revenue
         # TODO: Check if it is good to have this behaviour or if it will impact too much on not buy/sell in a lot of moments
         elif max_possible_revenue == 0 and revenue == 0:
-            reward = 1
+            revenue_ratio = 1
         # TODO: Check if use this or better to set to 0
         else:
-            # reward = revenue
-            reward = 0
+            # revenue_ratio = revenue
+            revenue_ratio = 0
+        return revenue_ratio
 
-        # Normalize according to the number of steps of this episode
-        reward /= (self._end_tick - self._start_tick)
+    def step(self, action):
+        observation, reward, done, info = super().step(action)
 
-        # Only for tracking of training
-        # if done:    
-        #     print(info['total_profit'] - 1, self.max_possible_profit() - 1)
+        if self.reward_type == REVENUE_REWARD:
+            revenue_ratio = self.calculate_revenue_ratio()
+
+            if done:
+                reward = self.max_final_reward * revenue_ratio
+            else:
+                reward = self.max_step_reward * revenue_ratio
+
+                # Normalize according to the number of steps of this episode
+                reward /= (self._end_tick - self._start_tick)
+        elif self.reward_type == PRICE_REWARD:
+            reward /= self.prices[self._last_trade_tick]
             
         return observation, reward, done, info
 
@@ -194,6 +188,7 @@ def runTestEnv(env, select_action_func, iterations=None, use_steps=False, use_ob
     
     total_rewards = []
     total_profits = [] 
+    total_revenue_ratio = []
 
     for _ in range(iterations):
         if isTFEnv:
@@ -237,8 +232,10 @@ def runTestEnv(env, select_action_func, iterations=None, use_steps=False, use_ob
 
         total_rewards.append(env._total_reward)
         total_profits.append(env._total_profit)
+        total_revenue_ratio.append(env.calculate_revenue_ratio())
     
     print(f'Total rewards: {np.mean(total_rewards):.2f} ± {np.std(total_rewards):.3f} (mean ± std. dev. of {iterations} iterations)')
     print(f'Total profits: {(np.mean(total_profits) - 1):.2%} ± {np.std(total_profits):.3%} (mean ± std. dev. of {iterations} iterations)')
+    print(f'Total revenue ratio: {np.mean(total_revenue_ratio):.2%} ± {np.std(total_revenue_ratio):.3%} (mean ± std. dev. of {iterations} iterations)')
 
-    return total_rewards, total_profits
+    return total_rewards, total_profits, total_revenue_ratio

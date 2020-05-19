@@ -66,17 +66,6 @@ import pandas_ta as ta
 eps = 1e-4
 
 KNOWN_COLS = {
-    'diff_prices': {
-        'cols': ['AO', 'APO', 'ATR', 'DPO', 'MACD', 'MACDH', 'MACDS', 'MOM', 'QS'],
-        'add_cols': False,
-        'normalize': False,
-    },
-    'prices': {
-        'cols': ['KAMA'],
-        'add_cols': True,
-        'ref_col': 'close',
-        'normalize': False,
-    },
     '0_1': {
         'cols': [],
         'add_cols': True,
@@ -132,7 +121,18 @@ KNOWN_COLS = {
         'max': 100000,
         'min': -100000,
         'std': eps,
-    }
+    },
+    'diff_prices': {
+        'cols': ['AO', 'APO', 'ATR', 'DPO', 'MACD', 'MACDH', 'MACDS', 'MOM', 'QS'],
+        'add_cols': False,
+        'normalize': False,
+    },
+    'prices': {
+        'cols': ['KAMA'],
+        'add_cols': True,
+        'ref_col': 'close',
+        'normalize': False,
+    },
 }
 
 
@@ -207,7 +207,7 @@ def normalizeFeatures(data, ranges_dict):
     return data
 
 
-def generateTAFeatures(data, exclude_ind=[], args=None):
+def generateTAFeatures(data, freq='D', exclude_ind=[], args=None):
     # Indicators not posible to use 'short_run' and 'cross'
     not_ind = ['long_run', 'short_run', 'cross']
     not_ind.append('ichimoku') # Output has to be treaten different because is returning two DataFrames
@@ -219,7 +219,7 @@ def generateTAFeatures(data, exclude_ind=[], args=None):
     indicators = [ind for ind in data.ta.indicators(as_list=True) if ind not in not_ind]
 
     if args is None:
-        basic_args = {'append': True, 'ewm': True, 'adjust': True}
+        basic_args = {'append': True, 'ewm': True, 'adjust': True, 'freq': freq}
         basic_args = dict(zip(indicators, [basic_args] * len(indicators)))
 
         args = basic_args
@@ -251,12 +251,14 @@ def cleanNan(data):
 def main(prices_path, ranges_dict_path, save_path, onlyRead=True, cleanNans=True, exclude_ind=[], args=None, freq='min', freq_raw='min', sep=',', timestamp_col=None, timestamp_unit='s', start_date=None, end_date=None, columns_dict=None):
     """Preprocess on prices historical data filling up all entries, aggregating by frequency, treating NA and differenciating
     """
-    
+
     if onlyRead and os.path.exists(ranges_dict_path) and os.path.exists(save_path):
         ranges_dict_path = 'data\\ranges_dict.pickle'
 
-        data = pd.read_csv(save_path, sep='\t')
-        data = data.drop('Timestamp', axis=1)
+        data = pd.read_csv(save_path, sep='\t', index_col=timestamp_col)
+        data = data.set_index(
+            pd.to_datetime(data.index)
+        )
         with open(ranges_dict_path, 'rb') as f:
             ranges_dict = pickle.load(f)
 
@@ -336,7 +338,8 @@ def main(prices_path, ranges_dict_path, save_path, onlyRead=True, cleanNans=True
         data = data[required_columns]
 
         print('Generating TA features...')
-        data = generateTAFeatures(data, exclude_ind, args)
+        data = generateTAFeatures(data, 1, exclude_ind, args) # TA Features directly with default values, not adapted
+        data = generateTAFeatures(data, freq, exclude_ind, args) # TA Features adapted to the current frequency
         ranges_dict = classifyColsByRanges(data)
         data = normalizeFeatures(data, ranges_dict)
         data = cleanNan(data)
