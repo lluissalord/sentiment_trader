@@ -123,7 +123,7 @@ KNOWN_COLS = {
         'std': eps,
     },
     'diff_prices': {
-        'cols': ['AO', 'APO', 'ATR', 'DPO', 'MACD', 'MACDH', 'MACDS', 'MOM', 'QS'],
+        'cols': ['AO', 'APO', 'ATR', 'DPO', 'MACDH', 'MACDS', 'MOM', 'QS'], # 'MACD'
         'add_cols': False,
         'normalize': False,
     },
@@ -133,6 +133,13 @@ KNOWN_COLS = {
         'ref_col': 'close',
         'normalize': False,
     },
+}
+
+FREQUENCY_DESCRIPTION = {
+    's': 'sec',
+    'm': 'min',
+    'h': 'hour',
+    'd': 'day',
 }
 
 
@@ -207,7 +214,7 @@ def normalizeFeatures(data, ranges_dict):
     return data
 
 
-def generateTAFeatures(data, freq='D', exclude_ind=[], args=None):
+def generateTAFeatures(data, exclude_ind=[], args=None, suffix=''):
     # Indicators not posible to use 'short_run' and 'cross'
     not_ind = ['long_run', 'short_run', 'cross']
     not_ind.append('ichimoku') # Output has to be treaten different because is returning two DataFrames
@@ -219,7 +226,7 @@ def generateTAFeatures(data, freq='D', exclude_ind=[], args=None):
     indicators = [ind for ind in data.ta.indicators(as_list=True) if ind not in not_ind]
 
     if args is None:
-        basic_args = {'append': True, 'ewm': True, 'adjust': True, 'freq': freq}
+        basic_args = {'append': True, 'ewm': True, 'adjust': True, 'suffix': suffix}
         basic_args = dict(zip(indicators, [basic_args] * len(indicators)))
 
         args = basic_args
@@ -255,9 +262,9 @@ def main(prices_path, ranges_dict_path, save_path, onlyRead=True, cleanNans=True
     if onlyRead and os.path.exists(ranges_dict_path) and os.path.exists(save_path):
         ranges_dict_path = 'data\\ranges_dict.pickle'
 
-        data = pd.read_csv(save_path, sep='\t', index_col=timestamp_col)
-        data = data.set_index(
-            pd.to_datetime(data.index)
+        final_data = pd.read_csv(save_path, sep='\t', index_col=timestamp_col)
+        final_data = final_data.set_index(
+            pd.to_datetime(final_data.index)
         )
         with open(ranges_dict_path, 'rb') as f:
             ranges_dict = pickle.load(f)
@@ -319,33 +326,53 @@ def main(prices_path, ranges_dict_path, save_path, onlyRead=True, cleanNans=True
         # Means that the prices is the same as in the previous minute
         df = df.fillna(method='ffill')
 
-        if freq_raw != freq:
-            print(f"Aggregating from {freq_raw} to {freq} level")
-            # Aggregate by frequency taking into account columns: open, high, low, close, volume
-            data = df.resample(freq).agg(
-                {
-                    'open': lambda x: x.iloc[0],
-                    'high': 'max',
-                    'low': 'min',
-                    'close': lambda x: x.iloc[-1],
-                    'volume': 'sum'
-                }
-            )
-        else:
-            data = df
-
-        # Only required columns are used
-        data = data[required_columns]
+        if type(freq) is str:
+            freq = [freq]
+        
+        all_data = []
+        for frequency in freq:
+            if freq_raw != frequency:
+                print(f"Aggregating from {freq_raw} to {frequency} level")
+                # Aggregate by frequency taking into account columns: open, high, low, close, volume
+                data = df.resample(frequency).agg(
+                    {
+                        'open': lambda x: x.iloc[0],
+                        'high': 'max',
+                        'low': 'min',
+                        'close': lambda x: x.iloc[-1],
+                        'volume': 'sum'
+                    }
+                )
+            else:
+                data = df
+            # Only required columns are used
+            data = data[required_columns]
+            all_data.append((data, frequency))
 
         print('Generating TA features...')
-        data = generateTAFeatures(data, 1, exclude_ind, args) # TA Features directly with default values, not adapted
-        data = generateTAFeatures(data, freq, exclude_ind, args) # TA Features adapted to the current frequency
-        ranges_dict = classifyColsByRanges(data)
-        data = normalizeFeatures(data, ranges_dict)
-        data = cleanNan(data)
-        data.to_csv(save_path, sep='\t', index_label='Timestamp')
+        for i, (data, frequency) in enumerate(all_data):
+
+            frequency_descr = FREQUENCY_DESCRIPTION[frequency]
+            if args is not None:
+                for ind in args:
+                    args[ind]['suffix'] = frequency_descr
+            
+            ta_data = generateTAFeatures(data, exclude_ind, args, suffix=frequency_descr)
+
+            if i == 0:
+                final_data = ta_data
+            else:
+                final_data = pd.merge_asof(final_data, ta_data, left_index=True, right_index=True, suffixes=('','_'))
+
+                # Remove original columns (open, low, high, close, volume) from the right side
+                final_data = final_data[final_data.columns[~final_data.columns.str.endswith('_')]]
+
+        ranges_dict = classifyColsByRanges(final_data)
+        final_data = normalizeFeatures(final_data, ranges_dict)
+        final_data = cleanNan(final_data)
+        final_data.to_csv(save_path, sep='\t', index_label='Timestamp')
 
         with open(ranges_dict_path, 'wb') as f:
             pickle.dump(ranges_dict, f)
 
-    return data, ranges_dict
+    return final_data, ranges_dict
