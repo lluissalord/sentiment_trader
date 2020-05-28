@@ -6,7 +6,7 @@ import os
 import glob
 from collections import Counter
 
-from utils import fillAllTime
+from features.utils import fillAllTime
 
 # Sentiment column names extracted from VADER process
 VADER_COLUMNS = [
@@ -26,7 +26,7 @@ TEXTBLOB_COLUMNS = [
 def addVaderSentiment(df, cols=VADER_COLUMNS):
     """Returns input DataFrame adding VADER sentiment columns
     """
-    from utils import vec_vaderSentimentAnalyser
+    from features.utils import vec_vaderSentimentAnalyser
     from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
     analyser = SentimentIntensityAnalyzer()
@@ -52,7 +52,7 @@ def addVaderSentiment(df, cols=VADER_COLUMNS):
 def addTextBlobSentiment(df, cols=TEXTBLOB_COLUMNS):
     """Returns input DataFrame adding TextBlob sentiment columns
     """
-    from utils import blobSentimentAnalyser
+    from features.utils import blobSentimentAnalyser
 
     sentiment_list = np.vectorize(blobSentimentAnalyser)(df['text'])
     new_df = pd.DataFrame(

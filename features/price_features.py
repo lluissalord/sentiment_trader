@@ -2,7 +2,7 @@ import pickle
 import os
 from collections import Counter
 
-from utils import fillAllTime
+from features.utils import fillAllTime
 
 import numpy as np
 import pandas as pd
