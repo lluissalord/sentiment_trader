@@ -4,3 +4,5 @@ data/
 settings.py
 logs/
 .ipynb_checkpoints/
+build/
+dist/
