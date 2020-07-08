@@ -45,7 +45,8 @@ emoji_pattern = re.compile("["
 emoticons = emoticons_happy.union(emoticons_sad)
 
 
-def blob_clean_tweets(tweet, clean_analysis=True):
+def blob_clean_tweets(tweet):
+    """ Remove undesired tokens and clean tweet text using Blob package and regex """
 
     stop_words = set(stopwords.words('english'))
 
@@ -76,6 +77,8 @@ def blob_clean_tweets(tweet, clean_analysis=True):
 
 
 def blobSentimentAnalyser(text):
+    """ Extract sentiment output (polarity and subjectivity) from raw tweet using Blob package """
+
     blob = TextBlob(blob_clean_tweets(text))
     #pass textBlob method for sentiment calculations
     Sentiment = blob.sentiment
@@ -86,37 +89,43 @@ def blobSentimentAnalyser(text):
 # ------------------------
 
 # For VADER  ------------------------
-def remove_pattern(input_txt, pattern, replace=''):
+def _remove_pattern(input_txt, pattern, replace=''):
     r = re.findall(pattern, input_txt)
     for i in r:
         input_txt = re.sub(i, replace, input_txt)        
     return input_txt
     
 def vader_clean_tweets(tweet):
+    """ Remove undesired tokens from tweets, useb by VADER package """
+
     # remove twitter Return handles (RT @xxx:)
-    tweet = remove_pattern(tweet, r"RT @[\w]*:")
+    tweet = _remove_pattern(tweet, r"RT @[\w]*:")
     # remove twitter handles (@xxx)
-    tweet = remove_pattern(tweet, r"@[\w]*")
+    tweet = _remove_pattern(tweet, r"@[\w]*")
     # remove URL links (httpxxx)
-    tweet = remove_pattern(tweet, r"https?://[A-Za-z0-9./]*")
+    tweet = _remove_pattern(tweet, r"https?://[A-Za-z0-9./]*")
     # remove special characters, numbers, punctuations (except for #)
     tweet = re.sub(r"[^a-zA-Z#]", " ", tweet)
 
     return tweet
 
 def vaderSentimentAnalyser(text, analyser):
+    """ Extract sentiment scores (neg, neu, pos, compound) from raw tweet, using VADER package"""
+
     new_text = vader_clean_tweets(text)
 
     scores = analyser.polarity_scores(new_text)
     return scores
 
 def vec_vader_clean_tweets(lst):
+    """ Vectorized function for removing undesired tokens from tweets, useb by VADER package """
+
     # remove twitter Return handles (RT @xxx:)
-    lst = np.vectorize(remove_pattern)(lst, r"RT @[\w]*:")
+    lst = np.vectorize(_remove_pattern)(lst, r"RT @[\w]*:")
     # remove twitter handles (@xxx)
-    lst = np.vectorize(remove_pattern)(lst, r"@[\w]*")
+    lst = np.vectorize(_remove_pattern)(lst, r"@[\w]*")
     # remove URL links (httpxxx)
-    lst = np.vectorize(remove_pattern)(lst, r"https?://[A-Za-z0-9./]*")
+    lst = np.vectorize(_remove_pattern)(lst, r"https?://[A-Za-z0-9./]*")
     # remove special characters, numbers, punctuations (except for #)
     lst = np.core.defchararray.replace(lst, r"[^a-zA-Z#]", " ")
     
@@ -124,6 +133,8 @@ def vec_vader_clean_tweets(lst):
 
 
 def vec_vaderSentimentAnalyser(text_lst, analyser, rename_dict=None):
+    """ Vectorized extraction of sentiment scores (neg, neu, pos, compound) from raw tweet, using VADER package"""
+
     new_text_lst = vec_vader_clean_tweets(text_lst)
 
     def polarity_scores(text):
@@ -143,8 +154,7 @@ def vec_vaderSentimentAnalyser(text_lst, analyser, rename_dict=None):
 # ------------------------
 
 def fillAllTime(df, freq='min', on=None, keep='first', start_dt=None, end_dt=None):
-    """Creates DataFrame with all the time steps in df[on] or between start_dt and end_dt
-    """
+    """Creates DataFrame with all the time steps in df[on] or between start_dt and end_dt """
     df_copy = df.copy()
     if on is None:
         df_copy.index = df_copy.index.floor(freq)
