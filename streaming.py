@@ -5,7 +5,7 @@ import numpy as np
 
 import tweepy
 
-from utils import (
+from features.utils import (
     blob_clean_tweets,
     vader_clean_tweets,
 )
