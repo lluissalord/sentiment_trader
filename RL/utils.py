@@ -20,7 +20,7 @@ from tf_agents.policies import random_tf_policy
 
 from tf_agents.policies import policy_saver
 
-from stock_env import RLStocksEnv, REVENUE_REWARD, PRICE_REWARD
+from RL.stock_env import RLStocksEnv, REVENUE_REWARD, PRICE_REWARD
 
 
 def generateSplitEnvs(
