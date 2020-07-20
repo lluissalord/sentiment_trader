@@ -9,7 +9,7 @@ PRICE_REWARD = 2
 
 # TODO: Normalize somehow the reward to be more standard between runs, independent on the data is processing
 # TODO: Plot training info during training to be able to track it
-class OwnStocksEnv(StocksEnv):
+class RLStocksEnv(StocksEnv):
 
     def __init__(self, df, window_size, frame_bound, steps_per_episode, is_training, position_as_observation=True, constant_step=False, min_steps_per_episode=2, reward_type=REVENUE_REWARD, max_final_reward=100, max_step_reward=1, price_column='close', feature_columns=None, seed=None):
 
