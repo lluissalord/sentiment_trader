@@ -8,63 +8,10 @@ import numpy as np
 import pandas as pd
 import pandas_ta as ta
 
-## Description of several TA features and their classification
-
-# Price differences
-# Awesome Oscillator (AO) --> Difference of prices
-# Absolute Price Oscillator (APO) --> Difference of prices
-# TRUERANGE --> Difference of prices
-# Average True Range (ATR) --> Difference of prices
-# Detrend Price Oscillator (DPO) --> Difference of prices
-# Moving Average, Convergence/Divergence (contains MACD) --> Difference of prices (MACDH is difference of difference of prices)
-# Momentum (MOM) --> Difference of prices
-# Q Stick (QS) --> Difference of prices
-
-
-# Volume
-# AD --> ((close - open) * volume / (high - low + eps)).cumsum() --> somehow cumsum of weighted volume --> grows constantly
-# 'OBV' in col  --> cumsum of signed volume
-# Elder's Force Index (EFI) --> (Difference of prices) * Volumen --> Unbound
-# Ease of Movement (EOM) --> (Unbound) Ponderation of how is moving high and low. Needs correct 'divisor' adapted to the volume
-# Negative Volume Index (NVI) --> (Unbound) CumSum de volumen negativo por ROC
-# Positive Volume Index (PVI) --> (Unbound) CumSum de volumen positivo por ROC
-# Price-Volume (PVOL) --> (Unbound) Prices * Volumen
-# Price-Volume Trend (PVT) --> (Unbound) CumSum of ROC * Volume
-
-# Others
-# CCI --> (Difference of prices) / c * MAD(mean price) --> where c is coefficient (default 0.015) and MAD is similar to std
-# CG --> Value between 0 and length (default 10)
-# Fisher Transform (FISHT) --> (Unbound) Because depends on the std dev of the market price, but it is important to see signals
-# Mass Index (MASSI) --> (Unbound) However proportional and centered to slow (default 25) --> Substract and Divide by slow could be a solution
-# Log Return (LOGRET) --> Logaritmic of (current price / previous price)
-# Slope (SLOPE) --> Difference of prices / length --> Option would be to use as_angle=True which put it as radians
-# Vortex (contains VTX) --> abs(Difference of prices) / abs(Difference of prices) --> (Unbound) > 0 centered around a bit less than 1
-
-# Bounded index
-# Rate of Change (ROC) --> -100 - 100
-# Coppock Curve (COPC) --> -200 - 200 (weighted double of ROC)
-# 'Know Sure Thing' (contains KST) --> -100000 - 100000 (weighted 1000 time of ROC) 
-# Normalized Average True Range (NATR) --> 0 - 100
-# Percent Return (PCTRET) --> -1 - 1
-# Percentage Price Oscillator (PPO) --> -100 - 100
-# Trix (TRIX)--> -100 - 100
-# True Strength Index (TSI) --> -100 - 100
-# Ultimate Oscillator (UO) --> -100 - 100
-# William's Percent R (WILLR) --> -100 - 0
-
-# Price ranges
-# Kaufman's Adaptive Moving Average (KAMA) --> Price range
-
-# Stadistical measures
-# Kurtosis (KURT) --> (Unbound) It is a stadistical measure like skewness to measure tail (so if experiment extrem returns +/-)
-# Skew (SKEW) --> (Unbound) It is a stadistical measure to measure tail (so if experiment extrem returns +/-)
-# STDEV --> It is a stadistical measure --> Difference of prices
-# Mean Absolute Deviation (MAD) --> It is a stadistical measure --> Difference of prices
-# Variance (VAR) --> It is a stadistical measure --> Difference of prices
-# Z Score (Z) --> Price normalized by Z score
-
 eps = 1e-4
 
+# There are some features which range of values is already known and estimation is not required
+# Besides, this dictionary helps to know how to normalize each feature
 KNOWN_COLS = {
     '0_1': {
         'cols': [],
@@ -135,6 +82,7 @@ KNOWN_COLS = {
     },
 }
 
+# Transform from a frequency name (standard for pandas) to a description
 FREQUENCY_DESCRIPTION = {
     's': 'sec',
     'm': 'min',
@@ -144,8 +92,9 @@ FREQUENCY_DESCRIPTION = {
 
 
 def classifyColsByRanges(data, known_cols_dict=KNOWN_COLS):
+    """ Classify each column from data into a group from KNOWN_COLS """
 
-    def removeFromAllColumns(all_columns, columns):
+    def _removeFromAllColumns(all_columns, columns):
         for col in columns:
             try:
                 i = all_columns.index(col)
@@ -153,7 +102,7 @@ def classifyColsByRanges(data, known_cols_dict=KNOWN_COLS):
             except ValueError:
                 print(f'Column {col} not found in {all_columns}')
 
-    # Transform all abreviated columns into the ones in data   
+    # Transform all abreviated columns in `know_cols` into the full name column names in data   
     ranges_dict = known_cols_dict.copy()
     all_known_columns = []
     for key, values in ranges_dict.items():
@@ -168,8 +117,9 @@ def classifyColsByRanges(data, known_cols_dict=KNOWN_COLS):
     all_columns = list(data.columns)
 
     # Remove all the already known columns
-    removeFromAllColumns(all_columns, all_known_columns)
+    _removeFromAllColumns(all_columns, all_known_columns)
 
+    # Look for columns which match requirements for each group
     for key in ranges_dict:
         columns = []
         if ranges_dict[key]['add_cols']:
@@ -190,11 +140,12 @@ def classifyColsByRanges(data, known_cols_dict=KNOWN_COLS):
             columns = list(data[all_columns].dtypes[(data.max() <= max_ + std_) & (data.min() >= min_ - std_)].index)
 
             # Remove from all_columns
-            removeFromAllColumns(all_columns, columns)
+            _removeFromAllColumns(all_columns, columns)
             
             # Add sorted unique columns to the pertinent range
             ranges_dict[key]['cols'] = sorted(list(set(columns + ranges_dict[key]['cols'])))
 
+    # Final group with the rest of columns which have not been classified in a group
     ranges_dict['others'] = {}
     ranges_dict['others']['cols'] = sorted(all_columns)
     ranges_dict['others']['normalize'] = False 
@@ -203,6 +154,7 @@ def classifyColsByRanges(data, known_cols_dict=KNOWN_COLS):
 
 
 def normalizeFeatures(data, ranges_dict):
+    """ Apply min-max normalization on all the features which have normalization range """
     
     for _, values in ranges_dict.items():
         if values['normalize']:
@@ -215,6 +167,8 @@ def normalizeFeatures(data, ranges_dict):
 
 
 def generateTAFeatures(data, exclude_ind=[], args=None, suffix=''):
+    """ Generate all the Technical Analysis features excluding the specified ones """
+
     # Indicators not posible to use 'short_run' and 'cross'
     not_ind = ['long_run', 'short_run', 'cross']
     not_ind.append('ichimoku') # Output has to be treaten different because is returning two DataFrames
@@ -242,6 +196,8 @@ def generateTAFeatures(data, exclude_ind=[], args=None, suffix=''):
 
 
 def cleanNan(data):
+    """ Clean data from NaN, columns with all NaNs and rows with at least one NaN """
+
     # Drop columns which have all columns as NaN
     remove_cols = data.dtypes[data.isnull().all()].index
     if len(remove_cols) > 0:
@@ -256,8 +212,7 @@ def cleanNan(data):
 
 
 def main(prices_path, ranges_dict_path, save_path, onlyRead=True, cleanNans=True, exclude_ind=[], args=None, freq='min', freq_raw='min', sep=',', timestamp_col=None, timestamp_unit='s', start_date=None, end_date=None, columns_dict=None):
-    """Preprocess on prices historical data filling up all entries, aggregating by frequency, treating NA and differenciating
-    """
+    """ Preprocess on prices historical data filling up all entries, aggregating by frequency, treating NA and differenciating """
 
     if onlyRead and os.path.exists(ranges_dict_path) and os.path.exists(save_path):
         ranges_dict_path = 'data\\ranges_dict.pickle'
