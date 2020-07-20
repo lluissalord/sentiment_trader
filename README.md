@@ -1,6 +1,10 @@
 # Sentiment trader
 
+Trader which take into account twitter sentiment on specific topic and Technical Analysis to decide to go Long or Short.
+
 ## Package Overview
+
+Currently this package has three main pilars: (1) Feature engineering on tweet sentiments and on prices using Technical Analysis; (2) Reinforcement learning environment for trading and (3) Jupyter Notebook which join all this parts and train an RL DNN model.
 
 ## Installation
 
