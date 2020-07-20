@@ -20,7 +20,7 @@ from tf_agents.policies import random_tf_policy
 
 from tf_agents.policies import policy_saver
 
-from own_stock_env import OwnStocksEnv, REVENUE_REWARD, PRICE_REWARD
+from stock_env import RLStocksEnv, REVENUE_REWARD, PRICE_REWARD
 
 
 def generateSplitEnvs(
@@ -39,8 +39,9 @@ def generateSplitEnvs(
     is_training=True,
     seed=12345,
 ):
+    """ Create environments for train, validation and test based on their respective DataFrames and properties """
 
-    eval_env = OwnStocksEnv(
+    eval_env = RLStocksEnv(
         df=valid_df,
         window_size=window_size,
         frame_bound=(window_size, len(valid_df)),
@@ -56,7 +57,7 @@ def generateSplitEnvs(
     eval_env.seed(seed)
     eval_env.reset()
 
-    test_env = OwnStocksEnv(
+    test_env = RLStocksEnv(
         df=test_df,
         window_size=window_size,
         frame_bound=(window_size, len(test_df)),
@@ -77,7 +78,7 @@ def generateSplitEnvs(
 
     tf_parallel_envs = []
     for i in range(num_parallel_environments):
-        train_env = OwnStocksEnv(
+        train_env = RLStocksEnv(
             df=train_df,
             window_size=window_size,
             frame_bound=(window_size, len(train_df)),
@@ -227,7 +228,10 @@ class AgentEarlyStopping():
 
 
 def evaluate(eval_metrics, eval_tf_env, eval_policy, num_eval_episodes, num_eval_seeds, global_step=None, eval_summary_writer=None, summary_prefix='Metrics', seed=12345):
+    """ Evaluate policy on the evaluation environment for the specified episodes and metrics """
+
     all_results = []
+    # Calculate metrics for the number of seeds provided in order to get more accurated results
     for i in range(num_eval_seeds):
         for env in eval_tf_env.envs:
             env.seed(seed + i)
@@ -241,6 +245,7 @@ def evaluate(eval_metrics, eval_tf_env, eval_policy, num_eval_episodes, num_eval
         )
         all_results.append(results)
 
+    # Calculate mean of the resulting metrics
     mean_results = collections.OrderedDict(results)
     if num_eval_seeds > 1:
         for metric in mean_results:
@@ -248,12 +253,15 @@ def evaluate(eval_metrics, eval_tf_env, eval_policy, num_eval_episodes, num_eval
             for result in all_results:
                 metric_sum = tf_add(metric_sum, result[metric])
             mean_results[metric] = metric_sum / len(all_results)
+
+    # Write on Tensorboard writer if provided
     if global_step and eval_summary_writer:
         with eval_summary_writer.as_default():
             for metric, value in mean_results.items():
                 tag = common.join_scope(summary_prefix, metric)
                 summary.scalar(name=tag, data=value, step=global_step)
 
+    # Print out the results of the metrics
     log = ['{0} = {1}'.format(metric, value)
            for metric, value in mean_results.items()]
     logging.info('%s \n\t\t %s', '', '\n\t\t '.join(log))
@@ -262,7 +270,9 @@ def evaluate(eval_metrics, eval_tf_env, eval_policy, num_eval_episodes, num_eval
 
 
 def train_eval(tf_agent, num_iterations, batch_size, tf_env, eval_tf_env, train_metrics, step_metrics, eval_metrics, global_step, steps_per_episode, num_parallel_environments, collect_per_iteration, train_steps_per_iteration, train_dir, saved_model_dir, eval_summary_writer, num_eval_episodes, num_eval_seeds=1, eval_metrics_callback=None, train_sequence_length=1, initial_collect_steps=1000, log_interval=100, eval_interval=400, policy_checkpoint_interval=400, train_checkpoint_interval=1200, rb_checkpoint_interval=2000, train_model=True, use_tf_functions=True, eval_early_stopping=False, seed=12345):
+    """ Train and evaluation function of a TF Agent given the properties provided """
 
+    # Define seed for each environment
     for i, env in enumerate(tf_env.envs):
         env.seed(seed + i)
     for i, env in enumerate(eval_tf_env.envs):
@@ -273,9 +283,11 @@ def train_eval(tf_agent, num_iterations, batch_size, tf_env, eval_tf_env, train_
     tf_agent.initialize()
     agent_name = tf_agent.__dict__['_name']
 
+    # Define policies
     eval_policy = tf_agent.policy
     collect_policy = tf_agent.collect_policy
 
+    # Define Replay Buffer
     replay_buffer_capacity = steps_per_episode * \
         collect_per_iteration // num_parallel_environments + 1
     replay_buffer = tf_uniform_replay_buffer.TFUniformReplayBuffer(
@@ -283,6 +295,7 @@ def train_eval(tf_agent, num_iterations, batch_size, tf_env, eval_tf_env, train_
         batch_size=num_parallel_environments,  # batch_size=tf_env.batch_size,
         max_length=replay_buffer_capacity)
 
+    # Define Dynamic driver to go through the environment depending on the agent
     if train_model:
         if agent_name in ['dqn_agent']:
             collect_driver = dynamic_step_driver.DynamicStepDriver(
@@ -300,6 +313,7 @@ def train_eval(tf_agent, num_iterations, batch_size, tf_env, eval_tf_env, train_
             raise NotImplementedError(
                 f'{agent_name} agent not yet implemented')
 
+    # Define Checkpointers for train and policy
     train_checkpointer = common.Checkpointer(
         ckpt_dir=train_dir,
         agent=tf_agent,
@@ -357,9 +371,11 @@ def train_eval(tf_agent, num_iterations, batch_size, tf_env, eval_tf_env, train_
             raise ValueError(
                 'Cannot set eval_early_stopping without eval_metric_callback being Agent Early Stopping instance')
 
+        # Once evaluate has been done call eval metrics callback
         if eval_metrics_callback is not None:
             eval_metrics_callback(results, global_step.numpy())
 
+        # Initialize training variables 
         time_step = None
         policy_state = collect_policy.get_initial_state(tf_env.batch_size)
 
@@ -368,6 +384,7 @@ def train_eval(tf_agent, num_iterations, batch_size, tf_env, eval_tf_env, train_
         train_time = 0
         summary_time = 0
 
+        # Define train_step and generate dataset if required
         if agent_name in ['dqn_agent']:
             # Dataset generates trajectories with shape [Bx2x...]
             logging.info(
@@ -398,6 +415,8 @@ def train_eval(tf_agent, num_iterations, batch_size, tf_env, eval_tf_env, train_
             f'Starting training...'
         )
         for _ in range(num_iterations):
+
+            # Collect data
             start_time = time.time()
             if agent_name in ['dqn_agent']:
                 time_step, policy_state = collect_driver.run(
@@ -412,17 +431,20 @@ def train_eval(tf_agent, num_iterations, batch_size, tf_env, eval_tf_env, train_
 
             collect_time += time.time() - start_time
 
+            # Train on collected data
             start_time = time.time()
             for _ in range(train_steps_per_iteration):
                 train_loss = train_step()
             train_time += time.time() - start_time
 
+            # Write on Tensorboard the training results
             start_time = time.time()
             for train_metric in train_metrics:
                 train_metric.tf_summaries(
                     train_step=global_step, step_metrics=step_metrics)
             summary_time += time.time() - start_time
 
+            # Print out metrics and reset variables
             if global_step.numpy() % log_interval == 0:
                 logging.info('step = %d, loss = %f', global_step.numpy(),
                              train_loss.loss)
@@ -438,6 +460,7 @@ def train_eval(tf_agent, num_iterations, batch_size, tf_env, eval_tf_env, train_
                 train_time = 0
                 summary_time = 0
 
+            # Save train checkpoint
             if global_step.numpy() % train_checkpoint_interval == 0:
                 start_time = time.time()
                 train_checkpointer.save(global_step=global_step.numpy())
@@ -445,6 +468,7 @@ def train_eval(tf_agent, num_iterations, batch_size, tf_env, eval_tf_env, train_
                     f'Saving Train lasts: {time.time() - start_time:.3f} s'
                 )
 
+            # Save policy checkpoint
             if global_step.numpy() % policy_checkpoint_interval == 0:
                 start_time = time.time()
                 policy_checkpointer.save(global_step=global_step.numpy())
@@ -462,6 +486,7 @@ def train_eval(tf_agent, num_iterations, batch_size, tf_env, eval_tf_env, train_
             #     f'Saving Replay Buffer lasts: {time.time() - start_time:.3f} s'
             #   )
 
+            # Evaluate on evaluation environment
             if global_step.numpy() % eval_interval == 0:
                 start_time = time.time()
                 results = evaluate(eval_metrics, eval_tf_env, eval_policy, num_eval_episodes,
@@ -472,6 +497,7 @@ def train_eval(tf_agent, num_iterations, batch_size, tf_env, eval_tf_env, train_
                     f'Calculate Evaluation lasts {time.time() - start_time:.3f} s'
                 )
 
+                # Stop training if EarlyStopping says so
                 if eval_early_stopping and eval_metrics_callback.stop_training:
                     logging.info(
                           f'Training stopped due to Agent Early Stopping at step: {global_step.numpy()}'
@@ -497,6 +523,7 @@ def train_eval(tf_agent, num_iterations, batch_size, tf_env, eval_tf_env, train_
                             ._checkpoint \
                             .restore(best_dir)
 
+                    # Load policy with best evaluation metric according to EarlyStopping
                     loadBestCheckpoint(
                         policy_checkpointer, os.path.join(train_dir, 'policy'))
                     loadBestCheckpoint(train_checkpointer, train_dir)
