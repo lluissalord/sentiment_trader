@@ -1,4 +1,4 @@
-name: crypto_trader
+name: sentiment_trader
 channels:
   - conda-forge
   - defaults
