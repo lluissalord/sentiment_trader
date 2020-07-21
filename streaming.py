@@ -1,4 +1,5 @@
-#%%
+""" Basic sentiment tweepy streaming """
+
 import sys
 
 import numpy as np

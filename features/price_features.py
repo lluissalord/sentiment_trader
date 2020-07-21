@@ -1,3 +1,5 @@
+""" Price feature engineering """
+
 import pickle
 import os
 from collections import Counter

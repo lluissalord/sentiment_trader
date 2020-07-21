@@ -1,0 +1,1268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.4" />
+<title>sentiment_trader.RL.utils API documentation</title>
+<meta name="description" content="Utils for RL agent" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/atom-one-dark.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<link rel="preconnect" href="https://www.google.com">
+<script async src="https://cse.google.com/cse.js?cx=017837193012385208679:pey8ky8gdqw"></script>
+<style>
+.gsc-control-cse {padding:0 !important;margin-top:1em}
+body.gsc-overflow-hidden #sidebar {overflow: visible;}
+</style>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS_CHTML" integrity="sha256-kZafAc6mZvK3W3v1pHOcUix30OHQN6pU/NO2oFkqZVw=" crossorigin></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js" integrity="sha256-eOgo0OtLL4cdq7RdwRUiGKLX9XsIJ7nGhWEKbohmVAQ=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+<style>.homelink{display:block;font-size:2em;font-weight:bold;color:#555;padding-bottom:.5em;border-bottom:1px solid silver}.homelink:hover{color:inherit}.homelink img{max-width:20%;max-height:5em;margin:auto;margin-bottom:.3em}</style>
+<link rel="canonical" href="https://pdoc3.github.io/pdoc/doc/sentiment_trader/RL/utils.html">
+<link rel="icon" href="https://pdoc3.github.io/pdoc/logo.png">
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>sentiment_trader.RL.utils</code></h1>
+</header>
+<section id="section-intro">
+<p>Utils for RL agent</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1d683d529224035ed66b4b658a1f49bab4246382/RL\utils.py#L0-L535" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">&#34;&#34;&#34; Utils for RL agent &#34;&#34;&#34;
+
+import numpy as np
+import collections
+import os
+import time
+
+from absl import logging
+
+from tensorflow import equal as tf_equal
+from tensorflow import add as tf_add
+from tensorflow.compat.v2 import summary
+
+from gym import spaces
+from tf_agents.environments import tf_py_environment, parallel_py_environment
+from tf_agents.environments.gym_wrapper import GymWrapper
+from tf_agents.eval import metric_utils
+from tf_agents.utils import common
+from tf_agents.drivers import dynamic_step_driver, dynamic_episode_driver
+from tf_agents.replay_buffers import tf_uniform_replay_buffer
+from tf_agents.policies import random_tf_policy
+
+from tf_agents.policies import policy_saver
+
+from RL.stock_env import RLStocksEnv, REVENUE_REWARD, PRICE_REWARD
+
+
+def generateSplitEnvs(
+    train_df,
+    valid_df,
+    test_df,
+    window_size,
+    steps_per_episode,
+    feature_columns,
+    reward_type=REVENUE_REWARD,
+    max_final_reward=1,
+    max_step_reward=0,
+    num_parallel_environments=1,
+    position_as_observation=True,
+    constant_step=False,
+    is_training=True,
+    seed=12345,
+):
+    &#34;&#34;&#34; Create environments for train, validation and test based on their respective DataFrames and properties &#34;&#34;&#34;
+
+    eval_env = RLStocksEnv(
+        df=valid_df,
+        window_size=window_size,
+        frame_bound=(window_size, len(valid_df)),
+        steps_per_episode=steps_per_episode,
+        is_training=is_training,
+        constant_step=constant_step,
+        feature_columns=feature_columns,
+        position_as_observation=position_as_observation,
+        reward_type=reward_type,
+        max_final_reward=max_final_reward,
+        max_step_reward=max_step_reward,
+    )
+    eval_env.seed(seed)
+    eval_env.reset()
+
+    test_env = RLStocksEnv(
+        df=test_df,
+        window_size=window_size,
+        frame_bound=(window_size, len(test_df)),
+        steps_per_episode=steps_per_episode,
+        is_training=is_training,
+        constant_step=constant_step,
+        feature_columns=feature_columns,
+        position_as_observation=position_as_observation,
+        reward_type=reward_type,
+        max_final_reward=max_final_reward,
+        max_step_reward=max_step_reward,
+    )
+    test_env.seed(seed)
+    test_env.reset()
+
+    # Otherwise raise error on evaluating ChosenActionHistogram metric
+    spec_dtype_map = {spaces.Discrete: np.int32}
+
+    tf_parallel_envs = []
+    for i in range(num_parallel_environments):
+        train_env = RLStocksEnv(
+            df=train_df,
+            window_size=window_size,
+            frame_bound=(window_size, len(train_df)),
+            steps_per_episode=steps_per_episode,
+            is_training=True,
+            constant_step=constant_step,
+            feature_columns=feature_columns,
+            position_as_observation=position_as_observation,
+            reward_type=reward_type,
+            max_final_reward=max_final_reward,
+            max_step_reward=max_step_reward,
+        )
+        train_env.seed(seed + i)
+        train_env.reset()
+        tf_parallel_envs.append(
+            GymWrapper(train_env, spec_dtype_map=spec_dtype_map)
+        )
+
+    # TODO: Implement Parallel Environment (need tf_agents.system.multiprocessing.enable_interactive_mode() added in github last updates)
+    if num_parallel_environments != 1:
+        tf_env = tf_py_environment.TFPyEnvironment(
+            parallel_py_environment.ParallelPyEnvironment(tf_parallel_envs))
+    else:
+        tf_env = tf_py_environment.TFPyEnvironment(tf_parallel_envs[0])
+
+    eval_tf_env = tf_py_environment.TFPyEnvironment(
+        GymWrapper(eval_env, spec_dtype_map=spec_dtype_map))
+    test_tf_env = tf_py_environment.TFPyEnvironment(
+        GymWrapper(test_env, spec_dtype_map=spec_dtype_map))
+
+    return tf_env, eval_tf_env, test_tf_env
+
+
+class AgentEarlyStopping():
+    def __init__(self,
+                 monitor=&#39;AverageReturn&#39;,
+                 min_delta=0,
+                 patience=0,
+                 warmup=0,
+                 verbose=0,
+                 mode=&#39;max&#39;,
+                 baseline=None):
+        &#34;&#34;&#34;Initialize an AgentEarlyStopping.
+        Arguments:
+            monitor: Quantity to be monitored.
+            min_delta: Minimum change in the monitored quantity
+                to qualify as an improvement, i.e. an absolute
+                change of less than min_delta, will count as no
+                improvement.
+            patience: Number of iterations with no improvement
+                after which training will be stopped.
+            warmup: Number of iterations to wait till starts to
+                take monitor quantity.
+            verbose: verbosity mode.
+            mode: One of `{&#34;auto&#34;, &#34;min&#34;, &#34;max&#34;}`. In `min` mode,
+                training will stop when the quantity
+                monitored has stopped decreasing; in `max`
+                mode it will stop when the quantity
+                monitored has stopped increasing; in `auto`
+                mode, the direction is automatically inferred
+                from the name of the monitored quantity.
+            baseline: Baseline value for the monitored quantity.
+                Training will stop if the model doesn&#39;t show improvement over the
+                baseline.
+        &#34;&#34;&#34;
+        # super(AgentEarlyStopping, self).__init__()
+
+        self.monitor = monitor
+        self.patience = patience
+        self.warmup = warmup
+        self.verbose = verbose
+        self.baseline = baseline
+        self.min_delta = abs(min_delta)
+
+        self.checkpointers = []
+
+        if mode not in [&#39;auto&#39;, &#39;min&#39;, &#39;max&#39;]:
+            logging.warning(&#39;EarlyStopping mode %s is unknown, &#39;
+                            &#39;fallback to auto mode.&#39;, mode)
+            mode = &#39;auto&#39;
+
+        if mode == &#39;min&#39;:
+            self.monitor_op = np.less
+        elif mode == &#39;max&#39;:
+            self.monitor_op = np.greater
+        else:
+            if &#39;acc&#39; in self.monitor:
+                self.monitor_op = np.greater
+            elif &#39;return&#39; in self.monitor.lower():
+                self.monitor_op = np.less
+            else:
+                self.monitor_op = np.less
+
+        if self.monitor_op == np.greater:
+            self.min_delta *= 1
+        else:
+            self.min_delta *= -1
+
+        self.reset()
+
+    def reset(self):
+        # Allow instances to be re-used
+        self.wait = 0
+        self._count = 0
+        self.best_step = 0
+        self.stopped_step = 0
+        self.stop_training = False
+        if self.baseline is not None:
+            self.best = self.baseline
+        else:
+            self.best = np.Inf if self.monitor_op == np.less else -np.Inf
+
+    # TODO: Calculate a EWMA with alpha = 0.999 and calculate max buffer with length = (log 0.01) / (log 0.999) (being 0.01 minimum weight)
+    def __call__(self, computed_metrics, global_step):
+        current = self.get_monitor_value(computed_metrics)
+        if current is None:
+            return
+        if self.warmup &lt;= self._count:
+            if self.monitor_op(current - self.min_delta, self.best):
+                self.best = current
+                self.best_step = global_step
+                self.wait = 0
+                logging.info(f&#39;Saved best {self.monitor} = {self.best:.5f} on step {global_step}&#39;)
+                for checkpointer in self.checkpointers:
+                    checkpointer.save(global_step)
+            else:
+                self.wait += 1
+            if self.wait &gt;= self.patience:
+                self.stopped_step = global_step
+                self.stop_training = True
+                logging.info(&#39;Global step %05d: early stopping&#39; %
+                             (self.stopped_step + 1))
+        else:
+            self._count += 1
+
+    def add_checkpointer(self, checkpointer):
+        self.checkpointers.append(checkpointer)
+
+    def get_monitor_value(self, computed_metrics):
+        computed_metrics = computed_metrics or {}
+        monitor_value = computed_metrics.get(self.monitor).numpy()
+        if monitor_value is None:
+            logging.warning(&#39;Agent early stopping conditioned on metric `%s` &#39;
+                            &#39;which is not available. Available metrics are: %s&#39;,
+                            self.monitor, &#39;,&#39;.join(list(computed_metrics.keys())))
+        return monitor_value
+
+
+def evaluate(eval_metrics, eval_tf_env, eval_policy, num_eval_episodes, num_eval_seeds, global_step=None, eval_summary_writer=None, summary_prefix=&#39;Metrics&#39;, seed=12345):
+    &#34;&#34;&#34; Evaluate policy on the evaluation environment for the specified episodes and metrics &#34;&#34;&#34;
+
+    all_results = []
+    # Calculate metrics for the number of seeds provided in order to get more accurated results
+    for i in range(num_eval_seeds):
+        for env in eval_tf_env.envs:
+            env.seed(seed + i)
+        # One final eval before exiting.
+        results = metric_utils.eager_compute(
+            eval_metrics,
+            eval_tf_env,
+            eval_policy,
+            num_episodes=num_eval_episodes,
+            train_step=global_step,
+        )
+        all_results.append(results)
+
+    # Calculate mean of the resulting metrics
+    mean_results = collections.OrderedDict(results)
+    if num_eval_seeds &gt; 1:
+        for metric in mean_results:
+            metric_sum = 0
+            for result in all_results:
+                metric_sum = tf_add(metric_sum, result[metric])
+            mean_results[metric] = metric_sum / len(all_results)
+
+    # Write on Tensorboard writer if provided
+    if global_step and eval_summary_writer:
+        with eval_summary_writer.as_default():
+            for metric, value in mean_results.items():
+                tag = common.join_scope(summary_prefix, metric)
+                summary.scalar(name=tag, data=value, step=global_step)
+
+    # Print out the results of the metrics
+    log = [&#39;{0} = {1}&#39;.format(metric, value)
+           for metric, value in mean_results.items()]
+    logging.info(&#39;%s \n\t\t %s&#39;, &#39;&#39;, &#39;\n\t\t &#39;.join(log))
+
+    return mean_results
+
+
+def train_eval(tf_agent, num_iterations, batch_size, tf_env, eval_tf_env, train_metrics, step_metrics, eval_metrics, global_step, steps_per_episode, num_parallel_environments, collect_per_iteration, train_steps_per_iteration, train_dir, saved_model_dir, eval_summary_writer, num_eval_episodes, num_eval_seeds=1, eval_metrics_callback=None, train_sequence_length=1, initial_collect_steps=1000, log_interval=100, eval_interval=400, policy_checkpoint_interval=400, train_checkpoint_interval=1200, rb_checkpoint_interval=2000, train_model=True, use_tf_functions=True, eval_early_stopping=False, seed=12345):
+    &#34;&#34;&#34; Train and evaluation function of a TF Agent given the properties provided &#34;&#34;&#34;
+
+    # Define seed for each environment
+    for i, env in enumerate(tf_env.envs):
+        env.seed(seed + i)
+    for i, env in enumerate(eval_tf_env.envs):
+        env.seed(seed + i)
+    tf_env.reset()
+    eval_tf_env.reset()
+
+    tf_agent.initialize()
+    agent_name = tf_agent.__dict__[&#39;_name&#39;]
+
+    # Define policies
+    eval_policy = tf_agent.policy
+    collect_policy = tf_agent.collect_policy
+
+    # Define Replay Buffer
+    replay_buffer_capacity = steps_per_episode * \
+        collect_per_iteration // num_parallel_environments + 1
+    replay_buffer = tf_uniform_replay_buffer.TFUniformReplayBuffer(
+        data_spec=tf_agent.collect_data_spec,
+        batch_size=num_parallel_environments,  # batch_size=tf_env.batch_size,
+        max_length=replay_buffer_capacity)
+
+    # Define Dynamic driver to go through the environment depending on the agent
+    if train_model:
+        if agent_name in [&#39;dqn_agent&#39;]:
+            collect_driver = dynamic_step_driver.DynamicStepDriver(
+                tf_env,
+                collect_policy,
+                observers=[replay_buffer.add_batch] + train_metrics,
+                num_steps=collect_per_iteration)
+        elif agent_name in [&#39;ppo_agent&#39;]:
+            collect_driver = dynamic_episode_driver.DynamicEpisodeDriver(
+                tf_env,
+                collect_policy,
+                observers=[replay_buffer.add_batch] + train_metrics,
+                num_episodes=collect_per_iteration)
+        else:
+            raise NotImplementedError(
+                f&#39;{agent_name} agent not yet implemented&#39;)
+
+    # Define Checkpointers for train and policy
+    train_checkpointer = common.Checkpointer(
+        ckpt_dir=train_dir,
+        agent=tf_agent,
+        global_step=global_step,
+        metrics=metric_utils.MetricsGroup(train_metrics, &#39;train_metrics&#39;))
+    policy_checkpointer = common.Checkpointer(
+        ckpt_dir=os.path.join(train_dir, &#39;policy&#39;),
+        policy=eval_policy,
+        global_step=global_step)
+    saved_model = policy_saver.PolicySaver(eval_policy, train_step=global_step)
+    # rb_checkpointer = common.Checkpointer(
+    #     ckpt_dir=os.path.join(train_dir, &#39;replay_buffer&#39;),
+    #     max_to_keep=1,
+    #     replay_buffer=replay_buffer)
+
+    policy_checkpointer.initialize_or_restore()  # TODO: To be tested
+    train_checkpointer.initialize_or_restore()
+    # rb_checkpointer.initialize_or_restore()
+
+    if train_model:
+
+        eval_metrics_callback.add_checkpointer(policy_checkpointer)
+        eval_metrics_callback.add_checkpointer(train_checkpointer)
+        # eval_metrics_callback.add_checkpointer(rb_checkpointer)
+
+        # TODO: should they use autograph=False?? as in tf_agents/agents/ppo/examples/v2/train_eval_clip_agent.py
+        if use_tf_functions:
+            # To speed up collect use common.function.
+            collect_driver.run = common.function(collect_driver.run)
+            tf_agent.train = common.function(tf_agent.train)
+
+        # Only run Replay buffer initialization if using one of the following agents
+        if agent_name in [&#39;dqn_agent&#39;]:
+            initial_collect_policy = random_tf_policy.RandomTFPolicy(
+                tf_env.time_step_spec(), tf_env.action_spec())
+
+            # Collect initial replay data.
+            logging.info(
+                &#39;Initializing replay buffer by collecting experience for %d steps with &#39;
+                &#39;a random policy.&#39;, initial_collect_steps)
+            dynamic_step_driver.DynamicStepDriver(
+                tf_env,
+                initial_collect_policy,
+                observers=[replay_buffer.add_batch] + train_metrics,
+                num_steps=initial_collect_steps).run()
+
+        # num_eval_episodes = eval_tf_env.envs[0].frame_bound[-1] // eval_tf_env.envs[0].steps_per_episode
+        logging.info(
+            f&#39;Initial eval metric&#39;
+        )
+        results = evaluate(eval_metrics, eval_tf_env, eval_policy, num_eval_episodes,
+                           num_eval_seeds, global_step, eval_summary_writer, summary_prefix=&#39;Metrics&#39;, seed=seed)
+
+        if eval_early_stopping and not isinstance(eval_metrics_callback, AgentEarlyStopping):
+            raise ValueError(
+                &#39;Cannot set eval_early_stopping without eval_metric_callback being Agent Early Stopping instance&#39;)
+
+        # Once evaluate has been done call eval metrics callback
+        if eval_metrics_callback is not None:
+            eval_metrics_callback(results, global_step.numpy())
+
+        # Initialize training variables 
+        time_step = None
+        policy_state = collect_policy.get_initial_state(tf_env.batch_size)
+
+        timed_at_step = global_step.numpy()
+        collect_time = 0
+        train_time = 0
+        summary_time = 0
+
+        # Define train_step and generate dataset if required
+        if agent_name in [&#39;dqn_agent&#39;]:
+            # Dataset generates trajectories with shape [Bx2x...]
+            logging.info(
+                f&#39;Dataset generates trajectories&#39;
+            )
+            dataset = replay_buffer.as_dataset(
+                num_parallel_calls=3,
+                sample_batch_size=batch_size,
+                # single_deterministic_pass=True,
+                num_steps=train_sequence_length + 1).prefetch(3)
+            iterator = iter(dataset)
+
+            def train_step():
+                experience, _ = next(iterator)
+                return tf_agent.train(experience)
+        elif agent_name in [&#39;ppo_agent&#39;]:
+            def train_step():
+                trajectories = replay_buffer.gather_all()
+                return tf_agent.train(experience=trajectories)
+        else:
+            raise NotImplementedError(
+                f&#39;{agent_name} agent not yet implemented&#39;)
+
+        if use_tf_functions:
+            train_step = common.function(train_step)
+
+        logging.info(
+            f&#39;Starting training...&#39;
+        )
+        for _ in range(num_iterations):
+
+            # Collect data
+            start_time = time.time()
+            if agent_name in [&#39;dqn_agent&#39;]:
+                time_step, policy_state = collect_driver.run(
+                    time_step=time_step,
+                    policy_state=policy_state,
+                )
+            elif agent_name in [&#39;ppo_agent&#39;]:
+                collect_driver.run()
+            else:
+                raise NotImplementedError(
+                    f&#39;{agent_name} agent not yet implemented&#39;)
+
+            collect_time += time.time() - start_time
+
+            # Train on collected data
+            start_time = time.time()
+            for _ in range(train_steps_per_iteration):
+                train_loss = train_step()
+            train_time += time.time() - start_time
+
+            # Write on Tensorboard the training results
+            start_time = time.time()
+            for train_metric in train_metrics:
+                train_metric.tf_summaries(
+                    train_step=global_step, step_metrics=step_metrics)
+            summary_time += time.time() - start_time
+
+            # Print out metrics and reset variables
+            if global_step.numpy() % log_interval == 0:
+                logging.info(&#39;step = %d, loss = %f&#39;, global_step.numpy(),
+                             train_loss.loss)
+                steps_per_sec = (global_step.numpy() - timed_at_step) / \
+                    (train_time + collect_time + summary_time)
+                logging.info(&#39;%.3f steps/sec&#39;, steps_per_sec)
+                logging.info(&#39;collect_time = %.3f, train_time = %.3f, summary_time = %.3f&#39;, collect_time,
+                             train_time, summary_time)
+                summary.scalar(
+                    name=&#39;global_steps_per_sec&#39;, data=steps_per_sec, step=global_step)
+                timed_at_step = global_step.numpy()
+                collect_time = 0
+                train_time = 0
+                summary_time = 0
+
+            # Save train checkpoint
+            if global_step.numpy() % train_checkpoint_interval == 0:
+                start_time = time.time()
+                train_checkpointer.save(global_step=global_step.numpy())
+                logging.info(
+                    f&#39;Saving Train lasts: {time.time() - start_time:.3f} s&#39;
+                )
+
+            # Save policy checkpoint
+            if global_step.numpy() % policy_checkpoint_interval == 0:
+                start_time = time.time()
+                policy_checkpointer.save(global_step=global_step.numpy())
+                saved_model_path = os.path.join(
+                    saved_model_dir, &#39;policy_&#39; + (&#39;%d&#39; % global_step.numpy()).zfill(9))
+                saved_model.save(saved_model_path)
+                logging.info(
+                    f&#39;Saving Policy lasts: {time.time() - start_time:.3f} s&#39;
+                )
+
+            # if global_step.numpy() % rb_checkpoint_interval == 0:
+            #   start_time = time.time()
+            #   rb_checkpointer.save(global_step=global_step.numpy())
+            #   logging.info(
+            #     f&#39;Saving Replay Buffer lasts: {time.time() - start_time:.3f} s&#39;
+            #   )
+
+            # Evaluate on evaluation environment
+            if global_step.numpy() % eval_interval == 0:
+                start_time = time.time()
+                results = evaluate(eval_metrics, eval_tf_env, eval_policy, num_eval_episodes,
+                                   num_eval_seeds, global_step, eval_summary_writer, summary_prefix=&#39;Metrics&#39;, seed=seed)
+                if eval_metrics_callback is not None:
+                    eval_metrics_callback(results, global_step.numpy())
+                logging.info(
+                    f&#39;Calculate Evaluation lasts {time.time() - start_time:.3f} s&#39;
+                )
+
+                # Stop training if EarlyStopping says so
+                if eval_early_stopping and eval_metrics_callback.stop_training:
+                    logging.info(
+                          f&#39;Training stopped due to Agent Early Stopping at step: {global_step.numpy()}&#39;
+                          )
+                    logging.info(
+                           f&#39;Best {eval_metrics_callback.monitor} was {eval_metrics_callback.best:.5f} at step {eval_metrics_callback.best_step}&#39;
+                           )
+
+                    def loadBestCheckpoint(checkpointer, ckpt_dir=None):
+                        latest_dir = checkpointer._manager.latest_checkpoint
+                        if latest_dir is not None:
+                            best_dir = latest_dir.split(&#39;-&#39;)
+                            best_dir[-1] = str(eval_metrics_callback.best_step)
+                            best_dir = &#39;-&#39;.join(best_dir)
+                        elif ckpt_dir is not None:
+                            best_dir = os.path.join(
+                                ckpt_dir, f&#39;ckpt-{eval_metrics_callback.best_step}&#39;)
+                        else:
+                            raise ValueError(
+                                &#39;Checkpointer with previous checkpoints or ckpt_dir must be provided&#39;)
+
+                        policy_checkpointer \
+                            ._checkpoint \
+                            .restore(best_dir)
+
+                    # Load policy with best evaluation metric according to EarlyStopping
+                    loadBestCheckpoint(
+                        policy_checkpointer, os.path.join(train_dir, &#39;policy&#39;))
+                    loadBestCheckpoint(train_checkpointer, train_dir)
+                    # loadBestCheckpoint(rb_checkpointer, os.path.join(train_dir, &#39;replay_buffer&#39;))
+
+                    eval_metrics_callback.reset()
+
+                    break</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="sentiment_trader.RL.utils.evaluate"><code class="name flex">
+<span>def <span class="ident">evaluate</span></span>(<span>eval_metrics, eval_tf_env, eval_policy, num_eval_episodes, num_eval_seeds, global_step=None, eval_summary_writer=None, summary_prefix='Metrics', seed=12345)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Evaluate policy on the evaluation environment for the specified episodes and metrics</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1d683d529224035ed66b4b658a1f49bab4246382/RL\utils.py#L232-L271" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">def evaluate(eval_metrics, eval_tf_env, eval_policy, num_eval_episodes, num_eval_seeds, global_step=None, eval_summary_writer=None, summary_prefix=&#39;Metrics&#39;, seed=12345):
+    &#34;&#34;&#34; Evaluate policy on the evaluation environment for the specified episodes and metrics &#34;&#34;&#34;
+
+    all_results = []
+    # Calculate metrics for the number of seeds provided in order to get more accurated results
+    for i in range(num_eval_seeds):
+        for env in eval_tf_env.envs:
+            env.seed(seed + i)
+        # One final eval before exiting.
+        results = metric_utils.eager_compute(
+            eval_metrics,
+            eval_tf_env,
+            eval_policy,
+            num_episodes=num_eval_episodes,
+            train_step=global_step,
+        )
+        all_results.append(results)
+
+    # Calculate mean of the resulting metrics
+    mean_results = collections.OrderedDict(results)
+    if num_eval_seeds &gt; 1:
+        for metric in mean_results:
+            metric_sum = 0
+            for result in all_results:
+                metric_sum = tf_add(metric_sum, result[metric])
+            mean_results[metric] = metric_sum / len(all_results)
+
+    # Write on Tensorboard writer if provided
+    if global_step and eval_summary_writer:
+        with eval_summary_writer.as_default():
+            for metric, value in mean_results.items():
+                tag = common.join_scope(summary_prefix, metric)
+                summary.scalar(name=tag, data=value, step=global_step)
+
+    # Print out the results of the metrics
+    log = [&#39;{0} = {1}&#39;.format(metric, value)
+           for metric, value in mean_results.items()]
+    logging.info(&#39;%s \n\t\t %s&#39;, &#39;&#39;, &#39;\n\t\t &#39;.join(log))
+
+    return mean_results</code></pre>
+</details>
+</dd>
+<dt id="sentiment_trader.RL.utils.generateSplitEnvs"><code class="name flex">
+<span>def <span class="ident">generateSplitEnvs</span></span>(<span>train_df, valid_df, test_df, window_size, steps_per_episode, feature_columns, reward_type=1, max_final_reward=1, max_step_reward=0, num_parallel_environments=1, position_as_observation=True, constant_step=False, is_training=True, seed=12345)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create environments for train, validation and test based on their respective DataFrames and properties</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1d683d529224035ed66b4b658a1f49bab4246382/RL\utils.py#L28-L114" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">def generateSplitEnvs(
+    train_df,
+    valid_df,
+    test_df,
+    window_size,
+    steps_per_episode,
+    feature_columns,
+    reward_type=REVENUE_REWARD,
+    max_final_reward=1,
+    max_step_reward=0,
+    num_parallel_environments=1,
+    position_as_observation=True,
+    constant_step=False,
+    is_training=True,
+    seed=12345,
+):
+    &#34;&#34;&#34; Create environments for train, validation and test based on their respective DataFrames and properties &#34;&#34;&#34;
+
+    eval_env = RLStocksEnv(
+        df=valid_df,
+        window_size=window_size,
+        frame_bound=(window_size, len(valid_df)),
+        steps_per_episode=steps_per_episode,
+        is_training=is_training,
+        constant_step=constant_step,
+        feature_columns=feature_columns,
+        position_as_observation=position_as_observation,
+        reward_type=reward_type,
+        max_final_reward=max_final_reward,
+        max_step_reward=max_step_reward,
+    )
+    eval_env.seed(seed)
+    eval_env.reset()
+
+    test_env = RLStocksEnv(
+        df=test_df,
+        window_size=window_size,
+        frame_bound=(window_size, len(test_df)),
+        steps_per_episode=steps_per_episode,
+        is_training=is_training,
+        constant_step=constant_step,
+        feature_columns=feature_columns,
+        position_as_observation=position_as_observation,
+        reward_type=reward_type,
+        max_final_reward=max_final_reward,
+        max_step_reward=max_step_reward,
+    )
+    test_env.seed(seed)
+    test_env.reset()
+
+    # Otherwise raise error on evaluating ChosenActionHistogram metric
+    spec_dtype_map = {spaces.Discrete: np.int32}
+
+    tf_parallel_envs = []
+    for i in range(num_parallel_environments):
+        train_env = RLStocksEnv(
+            df=train_df,
+            window_size=window_size,
+            frame_bound=(window_size, len(train_df)),
+            steps_per_episode=steps_per_episode,
+            is_training=True,
+            constant_step=constant_step,
+            feature_columns=feature_columns,
+            position_as_observation=position_as_observation,
+            reward_type=reward_type,
+            max_final_reward=max_final_reward,
+            max_step_reward=max_step_reward,
+        )
+        train_env.seed(seed + i)
+        train_env.reset()
+        tf_parallel_envs.append(
+            GymWrapper(train_env, spec_dtype_map=spec_dtype_map)
+        )
+
+    # TODO: Implement Parallel Environment (need tf_agents.system.multiprocessing.enable_interactive_mode() added in github last updates)
+    if num_parallel_environments != 1:
+        tf_env = tf_py_environment.TFPyEnvironment(
+            parallel_py_environment.ParallelPyEnvironment(tf_parallel_envs))
+    else:
+        tf_env = tf_py_environment.TFPyEnvironment(tf_parallel_envs[0])
+
+    eval_tf_env = tf_py_environment.TFPyEnvironment(
+        GymWrapper(eval_env, spec_dtype_map=spec_dtype_map))
+    test_tf_env = tf_py_environment.TFPyEnvironment(
+        GymWrapper(test_env, spec_dtype_map=spec_dtype_map))
+
+    return tf_env, eval_tf_env, test_tf_env</code></pre>
+</details>
+</dd>
+<dt id="sentiment_trader.RL.utils.train_eval"><code class="name flex">
+<span>def <span class="ident">train_eval</span></span>(<span>tf_agent, num_iterations, batch_size, tf_env, eval_tf_env, train_metrics, step_metrics, eval_metrics, global_step, steps_per_episode, num_parallel_environments, collect_per_iteration, train_steps_per_iteration, train_dir, saved_model_dir, eval_summary_writer, num_eval_episodes, num_eval_seeds=1, eval_metrics_callback=None, train_sequence_length=1, initial_collect_steps=1000, log_interval=100, eval_interval=400, policy_checkpoint_interval=400, train_checkpoint_interval=1200, rb_checkpoint_interval=2000, train_model=True, use_tf_functions=True, eval_early_stopping=False, seed=12345)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Train and evaluation function of a TF Agent given the properties provided</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1d683d529224035ed66b4b658a1f49bab4246382/RL\utils.py#L274-L536" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">def train_eval(tf_agent, num_iterations, batch_size, tf_env, eval_tf_env, train_metrics, step_metrics, eval_metrics, global_step, steps_per_episode, num_parallel_environments, collect_per_iteration, train_steps_per_iteration, train_dir, saved_model_dir, eval_summary_writer, num_eval_episodes, num_eval_seeds=1, eval_metrics_callback=None, train_sequence_length=1, initial_collect_steps=1000, log_interval=100, eval_interval=400, policy_checkpoint_interval=400, train_checkpoint_interval=1200, rb_checkpoint_interval=2000, train_model=True, use_tf_functions=True, eval_early_stopping=False, seed=12345):
+    &#34;&#34;&#34; Train and evaluation function of a TF Agent given the properties provided &#34;&#34;&#34;
+
+    # Define seed for each environment
+    for i, env in enumerate(tf_env.envs):
+        env.seed(seed + i)
+    for i, env in enumerate(eval_tf_env.envs):
+        env.seed(seed + i)
+    tf_env.reset()
+    eval_tf_env.reset()
+
+    tf_agent.initialize()
+    agent_name = tf_agent.__dict__[&#39;_name&#39;]
+
+    # Define policies
+    eval_policy = tf_agent.policy
+    collect_policy = tf_agent.collect_policy
+
+    # Define Replay Buffer
+    replay_buffer_capacity = steps_per_episode * \
+        collect_per_iteration // num_parallel_environments + 1
+    replay_buffer = tf_uniform_replay_buffer.TFUniformReplayBuffer(
+        data_spec=tf_agent.collect_data_spec,
+        batch_size=num_parallel_environments,  # batch_size=tf_env.batch_size,
+        max_length=replay_buffer_capacity)
+
+    # Define Dynamic driver to go through the environment depending on the agent
+    if train_model:
+        if agent_name in [&#39;dqn_agent&#39;]:
+            collect_driver = dynamic_step_driver.DynamicStepDriver(
+                tf_env,
+                collect_policy,
+                observers=[replay_buffer.add_batch] + train_metrics,
+                num_steps=collect_per_iteration)
+        elif agent_name in [&#39;ppo_agent&#39;]:
+            collect_driver = dynamic_episode_driver.DynamicEpisodeDriver(
+                tf_env,
+                collect_policy,
+                observers=[replay_buffer.add_batch] + train_metrics,
+                num_episodes=collect_per_iteration)
+        else:
+            raise NotImplementedError(
+                f&#39;{agent_name} agent not yet implemented&#39;)
+
+    # Define Checkpointers for train and policy
+    train_checkpointer = common.Checkpointer(
+        ckpt_dir=train_dir,
+        agent=tf_agent,
+        global_step=global_step,
+        metrics=metric_utils.MetricsGroup(train_metrics, &#39;train_metrics&#39;))
+    policy_checkpointer = common.Checkpointer(
+        ckpt_dir=os.path.join(train_dir, &#39;policy&#39;),
+        policy=eval_policy,
+        global_step=global_step)
+    saved_model = policy_saver.PolicySaver(eval_policy, train_step=global_step)
+    # rb_checkpointer = common.Checkpointer(
+    #     ckpt_dir=os.path.join(train_dir, &#39;replay_buffer&#39;),
+    #     max_to_keep=1,
+    #     replay_buffer=replay_buffer)
+
+    policy_checkpointer.initialize_or_restore()  # TODO: To be tested
+    train_checkpointer.initialize_or_restore()
+    # rb_checkpointer.initialize_or_restore()
+
+    if train_model:
+
+        eval_metrics_callback.add_checkpointer(policy_checkpointer)
+        eval_metrics_callback.add_checkpointer(train_checkpointer)
+        # eval_metrics_callback.add_checkpointer(rb_checkpointer)
+
+        # TODO: should they use autograph=False?? as in tf_agents/agents/ppo/examples/v2/train_eval_clip_agent.py
+        if use_tf_functions:
+            # To speed up collect use common.function.
+            collect_driver.run = common.function(collect_driver.run)
+            tf_agent.train = common.function(tf_agent.train)
+
+        # Only run Replay buffer initialization if using one of the following agents
+        if agent_name in [&#39;dqn_agent&#39;]:
+            initial_collect_policy = random_tf_policy.RandomTFPolicy(
+                tf_env.time_step_spec(), tf_env.action_spec())
+
+            # Collect initial replay data.
+            logging.info(
+                &#39;Initializing replay buffer by collecting experience for %d steps with &#39;
+                &#39;a random policy.&#39;, initial_collect_steps)
+            dynamic_step_driver.DynamicStepDriver(
+                tf_env,
+                initial_collect_policy,
+                observers=[replay_buffer.add_batch] + train_metrics,
+                num_steps=initial_collect_steps).run()
+
+        # num_eval_episodes = eval_tf_env.envs[0].frame_bound[-1] // eval_tf_env.envs[0].steps_per_episode
+        logging.info(
+            f&#39;Initial eval metric&#39;
+        )
+        results = evaluate(eval_metrics, eval_tf_env, eval_policy, num_eval_episodes,
+                           num_eval_seeds, global_step, eval_summary_writer, summary_prefix=&#39;Metrics&#39;, seed=seed)
+
+        if eval_early_stopping and not isinstance(eval_metrics_callback, AgentEarlyStopping):
+            raise ValueError(
+                &#39;Cannot set eval_early_stopping without eval_metric_callback being Agent Early Stopping instance&#39;)
+
+        # Once evaluate has been done call eval metrics callback
+        if eval_metrics_callback is not None:
+            eval_metrics_callback(results, global_step.numpy())
+
+        # Initialize training variables 
+        time_step = None
+        policy_state = collect_policy.get_initial_state(tf_env.batch_size)
+
+        timed_at_step = global_step.numpy()
+        collect_time = 0
+        train_time = 0
+        summary_time = 0
+
+        # Define train_step and generate dataset if required
+        if agent_name in [&#39;dqn_agent&#39;]:
+            # Dataset generates trajectories with shape [Bx2x...]
+            logging.info(
+                f&#39;Dataset generates trajectories&#39;
+            )
+            dataset = replay_buffer.as_dataset(
+                num_parallel_calls=3,
+                sample_batch_size=batch_size,
+                # single_deterministic_pass=True,
+                num_steps=train_sequence_length + 1).prefetch(3)
+            iterator = iter(dataset)
+
+            def train_step():
+                experience, _ = next(iterator)
+                return tf_agent.train(experience)
+        elif agent_name in [&#39;ppo_agent&#39;]:
+            def train_step():
+                trajectories = replay_buffer.gather_all()
+                return tf_agent.train(experience=trajectories)
+        else:
+            raise NotImplementedError(
+                f&#39;{agent_name} agent not yet implemented&#39;)
+
+        if use_tf_functions:
+            train_step = common.function(train_step)
+
+        logging.info(
+            f&#39;Starting training...&#39;
+        )
+        for _ in range(num_iterations):
+
+            # Collect data
+            start_time = time.time()
+            if agent_name in [&#39;dqn_agent&#39;]:
+                time_step, policy_state = collect_driver.run(
+                    time_step=time_step,
+                    policy_state=policy_state,
+                )
+            elif agent_name in [&#39;ppo_agent&#39;]:
+                collect_driver.run()
+            else:
+                raise NotImplementedError(
+                    f&#39;{agent_name} agent not yet implemented&#39;)
+
+            collect_time += time.time() - start_time
+
+            # Train on collected data
+            start_time = time.time()
+            for _ in range(train_steps_per_iteration):
+                train_loss = train_step()
+            train_time += time.time() - start_time
+
+            # Write on Tensorboard the training results
+            start_time = time.time()
+            for train_metric in train_metrics:
+                train_metric.tf_summaries(
+                    train_step=global_step, step_metrics=step_metrics)
+            summary_time += time.time() - start_time
+
+            # Print out metrics and reset variables
+            if global_step.numpy() % log_interval == 0:
+                logging.info(&#39;step = %d, loss = %f&#39;, global_step.numpy(),
+                             train_loss.loss)
+                steps_per_sec = (global_step.numpy() - timed_at_step) / \
+                    (train_time + collect_time + summary_time)
+                logging.info(&#39;%.3f steps/sec&#39;, steps_per_sec)
+                logging.info(&#39;collect_time = %.3f, train_time = %.3f, summary_time = %.3f&#39;, collect_time,
+                             train_time, summary_time)
+                summary.scalar(
+                    name=&#39;global_steps_per_sec&#39;, data=steps_per_sec, step=global_step)
+                timed_at_step = global_step.numpy()
+                collect_time = 0
+                train_time = 0
+                summary_time = 0
+
+            # Save train checkpoint
+            if global_step.numpy() % train_checkpoint_interval == 0:
+                start_time = time.time()
+                train_checkpointer.save(global_step=global_step.numpy())
+                logging.info(
+                    f&#39;Saving Train lasts: {time.time() - start_time:.3f} s&#39;
+                )
+
+            # Save policy checkpoint
+            if global_step.numpy() % policy_checkpoint_interval == 0:
+                start_time = time.time()
+                policy_checkpointer.save(global_step=global_step.numpy())
+                saved_model_path = os.path.join(
+                    saved_model_dir, &#39;policy_&#39; + (&#39;%d&#39; % global_step.numpy()).zfill(9))
+                saved_model.save(saved_model_path)
+                logging.info(
+                    f&#39;Saving Policy lasts: {time.time() - start_time:.3f} s&#39;
+                )
+
+            # if global_step.numpy() % rb_checkpoint_interval == 0:
+            #   start_time = time.time()
+            #   rb_checkpointer.save(global_step=global_step.numpy())
+            #   logging.info(
+            #     f&#39;Saving Replay Buffer lasts: {time.time() - start_time:.3f} s&#39;
+            #   )
+
+            # Evaluate on evaluation environment
+            if global_step.numpy() % eval_interval == 0:
+                start_time = time.time()
+                results = evaluate(eval_metrics, eval_tf_env, eval_policy, num_eval_episodes,
+                                   num_eval_seeds, global_step, eval_summary_writer, summary_prefix=&#39;Metrics&#39;, seed=seed)
+                if eval_metrics_callback is not None:
+                    eval_metrics_callback(results, global_step.numpy())
+                logging.info(
+                    f&#39;Calculate Evaluation lasts {time.time() - start_time:.3f} s&#39;
+                )
+
+                # Stop training if EarlyStopping says so
+                if eval_early_stopping and eval_metrics_callback.stop_training:
+                    logging.info(
+                          f&#39;Training stopped due to Agent Early Stopping at step: {global_step.numpy()}&#39;
+                          )
+                    logging.info(
+                           f&#39;Best {eval_metrics_callback.monitor} was {eval_metrics_callback.best:.5f} at step {eval_metrics_callback.best_step}&#39;
+                           )
+
+                    def loadBestCheckpoint(checkpointer, ckpt_dir=None):
+                        latest_dir = checkpointer._manager.latest_checkpoint
+                        if latest_dir is not None:
+                            best_dir = latest_dir.split(&#39;-&#39;)
+                            best_dir[-1] = str(eval_metrics_callback.best_step)
+                            best_dir = &#39;-&#39;.join(best_dir)
+                        elif ckpt_dir is not None:
+                            best_dir = os.path.join(
+                                ckpt_dir, f&#39;ckpt-{eval_metrics_callback.best_step}&#39;)
+                        else:
+                            raise ValueError(
+                                &#39;Checkpointer with previous checkpoints or ckpt_dir must be provided&#39;)
+
+                        policy_checkpointer \
+                            ._checkpoint \
+                            .restore(best_dir)
+
+                    # Load policy with best evaluation metric according to EarlyStopping
+                    loadBestCheckpoint(
+                        policy_checkpointer, os.path.join(train_dir, &#39;policy&#39;))
+                    loadBestCheckpoint(train_checkpointer, train_dir)
+                    # loadBestCheckpoint(rb_checkpointer, os.path.join(train_dir, &#39;replay_buffer&#39;))
+
+                    eval_metrics_callback.reset()
+
+                    break</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="sentiment_trader.RL.utils.AgentEarlyStopping"><code class="flex name class">
+<span>class <span class="ident">AgentEarlyStopping</span></span>
+<span>(</span><span>monitor='AverageReturn', min_delta=0, patience=0, warmup=0, verbose=0, mode='max', baseline=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Initialize an AgentEarlyStopping.</p>
+<h2 id="arguments">Arguments</h2>
+<p>monitor: Quantity to be monitored.
+min_delta: Minimum change in the monitored quantity
+to qualify as an improvement, i.e. an absolute
+change of less than min_delta, will count as no
+improvement.
+patience: Number of iterations with no improvement
+after which training will be stopped.
+warmup: Number of iterations to wait till starts to
+take monitor quantity.
+verbose: verbosity mode.
+mode: One of <code>{"auto", "min", "max"}</code>. In <code>min</code> mode,
+training will stop when the quantity
+monitored has stopped decreasing; in <code>max</code>
+mode it will stop when the quantity
+monitored has stopped increasing; in <code>auto</code>
+mode, the direction is automatically inferred
+from the name of the monitored quantity.
+baseline: Baseline value for the monitored quantity.
+Training will stop if the model doesn't show improvement over the
+baseline.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1d683d529224035ed66b4b658a1f49bab4246382/RL\utils.py#L117-L229" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">class AgentEarlyStopping():
+    def __init__(self,
+                 monitor=&#39;AverageReturn&#39;,
+                 min_delta=0,
+                 patience=0,
+                 warmup=0,
+                 verbose=0,
+                 mode=&#39;max&#39;,
+                 baseline=None):
+        &#34;&#34;&#34;Initialize an AgentEarlyStopping.
+        Arguments:
+            monitor: Quantity to be monitored.
+            min_delta: Minimum change in the monitored quantity
+                to qualify as an improvement, i.e. an absolute
+                change of less than min_delta, will count as no
+                improvement.
+            patience: Number of iterations with no improvement
+                after which training will be stopped.
+            warmup: Number of iterations to wait till starts to
+                take monitor quantity.
+            verbose: verbosity mode.
+            mode: One of `{&#34;auto&#34;, &#34;min&#34;, &#34;max&#34;}`. In `min` mode,
+                training will stop when the quantity
+                monitored has stopped decreasing; in `max`
+                mode it will stop when the quantity
+                monitored has stopped increasing; in `auto`
+                mode, the direction is automatically inferred
+                from the name of the monitored quantity.
+            baseline: Baseline value for the monitored quantity.
+                Training will stop if the model doesn&#39;t show improvement over the
+                baseline.
+        &#34;&#34;&#34;
+        # super(AgentEarlyStopping, self).__init__()
+
+        self.monitor = monitor
+        self.patience = patience
+        self.warmup = warmup
+        self.verbose = verbose
+        self.baseline = baseline
+        self.min_delta = abs(min_delta)
+
+        self.checkpointers = []
+
+        if mode not in [&#39;auto&#39;, &#39;min&#39;, &#39;max&#39;]:
+            logging.warning(&#39;EarlyStopping mode %s is unknown, &#39;
+                            &#39;fallback to auto mode.&#39;, mode)
+            mode = &#39;auto&#39;
+
+        if mode == &#39;min&#39;:
+            self.monitor_op = np.less
+        elif mode == &#39;max&#39;:
+            self.monitor_op = np.greater
+        else:
+            if &#39;acc&#39; in self.monitor:
+                self.monitor_op = np.greater
+            elif &#39;return&#39; in self.monitor.lower():
+                self.monitor_op = np.less
+            else:
+                self.monitor_op = np.less
+
+        if self.monitor_op == np.greater:
+            self.min_delta *= 1
+        else:
+            self.min_delta *= -1
+
+        self.reset()
+
+    def reset(self):
+        # Allow instances to be re-used
+        self.wait = 0
+        self._count = 0
+        self.best_step = 0
+        self.stopped_step = 0
+        self.stop_training = False
+        if self.baseline is not None:
+            self.best = self.baseline
+        else:
+            self.best = np.Inf if self.monitor_op == np.less else -np.Inf
+
+    # TODO: Calculate a EWMA with alpha = 0.999 and calculate max buffer with length = (log 0.01) / (log 0.999) (being 0.01 minimum weight)
+    def __call__(self, computed_metrics, global_step):
+        current = self.get_monitor_value(computed_metrics)
+        if current is None:
+            return
+        if self.warmup &lt;= self._count:
+            if self.monitor_op(current - self.min_delta, self.best):
+                self.best = current
+                self.best_step = global_step
+                self.wait = 0
+                logging.info(f&#39;Saved best {self.monitor} = {self.best:.5f} on step {global_step}&#39;)
+                for checkpointer in self.checkpointers:
+                    checkpointer.save(global_step)
+            else:
+                self.wait += 1
+            if self.wait &gt;= self.patience:
+                self.stopped_step = global_step
+                self.stop_training = True
+                logging.info(&#39;Global step %05d: early stopping&#39; %
+                             (self.stopped_step + 1))
+        else:
+            self._count += 1
+
+    def add_checkpointer(self, checkpointer):
+        self.checkpointers.append(checkpointer)
+
+    def get_monitor_value(self, computed_metrics):
+        computed_metrics = computed_metrics or {}
+        monitor_value = computed_metrics.get(self.monitor).numpy()
+        if monitor_value is None:
+            logging.warning(&#39;Agent early stopping conditioned on metric `%s` &#39;
+                            &#39;which is not available. Available metrics are: %s&#39;,
+                            self.monitor, &#39;,&#39;.join(list(computed_metrics.keys())))
+        return monitor_value</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="sentiment_trader.RL.utils.AgentEarlyStopping.add_checkpointer"><code class="name flex">
+<span>def <span class="ident">add_checkpointer</span></span>(<span>self, checkpointer)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1d683d529224035ed66b4b658a1f49bab4246382/RL\utils.py#L219-L220" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">def add_checkpointer(self, checkpointer):
+    self.checkpointers.append(checkpointer)</code></pre>
+</details>
+</dd>
+<dt id="sentiment_trader.RL.utils.AgentEarlyStopping.get_monitor_value"><code class="name flex">
+<span>def <span class="ident">get_monitor_value</span></span>(<span>self, computed_metrics)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1d683d529224035ed66b4b658a1f49bab4246382/RL\utils.py#L222-L229" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">def get_monitor_value(self, computed_metrics):
+    computed_metrics = computed_metrics or {}
+    monitor_value = computed_metrics.get(self.monitor).numpy()
+    if monitor_value is None:
+        logging.warning(&#39;Agent early stopping conditioned on metric `%s` &#39;
+                        &#39;which is not available. Available metrics are: %s&#39;,
+                        self.monitor, &#39;,&#39;.join(list(computed_metrics.keys())))
+    return monitor_value</code></pre>
+</details>
+</dd>
+<dt id="sentiment_trader.RL.utils.AgentEarlyStopping.reset"><code class="name flex">
+<span>def <span class="ident">reset</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1d683d529224035ed66b4b658a1f49bab4246382/RL\utils.py#L184-L194" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">def reset(self):
+    # Allow instances to be re-used
+    self.wait = 0
+    self._count = 0
+    self.best_step = 0
+    self.stopped_step = 0
+    self.stop_training = False
+    if self.baseline is not None:
+        self.best = self.baseline
+    else:
+        self.best = np.Inf if self.monitor_op == np.less else -np.Inf</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="gcse-search" style="height: 70px"
+data-as_oq="inurl:github.com/lluissalord/sentiment_trader site:sentiment_trader.github.io site:sentiment_trader.website"
+data-gaCategoryParameter="sentiment_trader.RL.utils">
+</div>
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="sentiment_trader.RL" href="index.html">sentiment_trader.RL</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="sentiment_trader.RL.utils.evaluate" href="#sentiment_trader.RL.utils.evaluate">evaluate</a></code></li>
+<li><code><a title="sentiment_trader.RL.utils.generateSplitEnvs" href="#sentiment_trader.RL.utils.generateSplitEnvs">generateSplitEnvs</a></code></li>
+<li><code><a title="sentiment_trader.RL.utils.train_eval" href="#sentiment_trader.RL.utils.train_eval">train_eval</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="sentiment_trader.RL.utils.AgentEarlyStopping" href="#sentiment_trader.RL.utils.AgentEarlyStopping">AgentEarlyStopping</a></code></h4>
+<ul class="">
+<li><code><a title="sentiment_trader.RL.utils.AgentEarlyStopping.add_checkpointer" href="#sentiment_trader.RL.utils.AgentEarlyStopping.add_checkpointer">add_checkpointer</a></code></li>
+<li><code><a title="sentiment_trader.RL.utils.AgentEarlyStopping.get_monitor_value" href="#sentiment_trader.RL.utils.AgentEarlyStopping.get_monitor_value">get_monitor_value</a></code></li>
+<li><code><a title="sentiment_trader.RL.utils.AgentEarlyStopping.reset" href="#sentiment_trader.RL.utils.AgentEarlyStopping.reset">reset</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.4</a>.</p>
+</footer>
+</body>
+</html>

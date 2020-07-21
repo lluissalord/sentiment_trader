@@ -1,4 +1,5 @@
-# %%
+""" Tweet sentiment analysis feature engineering """
+
 import pandas as pd
 import numpy as np
 import time
@@ -243,7 +244,6 @@ def tweetsPreprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTB
     return df
 
 
-# %%
 if __name__ == "__main__":
     # Scrapped from twitters from 2016-01-01 to 2019-03-29, Collecting Tweets containing Bitcoin or BTC
     tweets_path = 'data/sources/tweets_historical.csv'

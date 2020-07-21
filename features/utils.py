@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+""" Utils for feature engineering """
+
 import numpy as np
 import pandas as pd
 

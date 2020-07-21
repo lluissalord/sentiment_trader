@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.4" />
+<title>sentiment_trader.features.tweets_preprocess API documentation</title>
+<meta name="description" content="Tweet sentiment analysis feature engineering" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/atom-one-dark.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<link rel="preconnect" href="https://www.google.com">
+<script async src="https://cse.google.com/cse.js?cx=017837193012385208679:pey8ky8gdqw"></script>
+<style>
+.gsc-control-cse {padding:0 !important;margin-top:1em}
+body.gsc-overflow-hidden #sidebar {overflow: visible;}
+</style>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS_CHTML" integrity="sha256-kZafAc6mZvK3W3v1pHOcUix30OHQN6pU/NO2oFkqZVw=" crossorigin></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js" integrity="sha256-eOgo0OtLL4cdq7RdwRUiGKLX9XsIJ7nGhWEKbohmVAQ=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+<style>.homelink{display:block;font-size:2em;font-weight:bold;color:#555;padding-bottom:.5em;border-bottom:1px solid silver}.homelink:hover{color:inherit}.homelink img{max-width:20%;max-height:5em;margin:auto;margin-bottom:.3em}</style>
+<link rel="canonical" href="https://pdoc3.github.io/pdoc/doc/sentiment_trader/features/tweets_preprocess.html">
+<link rel="icon" href="https://pdoc3.github.io/pdoc/logo.png">
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>sentiment_trader.features.tweets_preprocess</code></h1>
+</header>
+<section id="section-intro">
+<p>Tweet sentiment analysis feature engineering</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1d683d529224035ed66b4b658a1f49bab4246382/features\tweets_preprocess.py#L0-L270" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">&#34;&#34;&#34; Tweet sentiment analysis feature engineering &#34;&#34;&#34;
+
+import pandas as pd
+import numpy as np
+import time
+import os
+import glob
+from collections import Counter
+
+from features.utils import fillAllTime
+
+# Sentiment column names extracted from VADER process
+VADER_COLUMNS = [
+    &#39;Negative&#39;,
+    &#39;Neutral&#39;,
+    &#39;Positive&#39;,
+    &#39;Compound&#39;,
+]
+
+# Sentiment column names extracted from TextBlob process
+TEXTBLOB_COLUMNS = [
+    &#39;Polarity&#39;,
+    &#39;Subjectivity&#39;,
+]
+
+
+def addVaderSentiment(df, cols=VADER_COLUMNS):
+    &#34;&#34;&#34;Returns input DataFrame adding VADER sentiment columns
+    &#34;&#34;&#34;
+    from features.utils import vec_vaderSentimentAnalyser
+    from nltk.sentiment.vader import SentimentIntensityAnalyzer
+
+    analyser = SentimentIntensityAnalyzer()
+    
+    scores = vec_vaderSentimentAnalyser(
+        df[&#39;text&#39;],
+        analyser,
+        rename_dict=dict(
+            zip(
+                [&#39;neg&#39;,&#39;neu&#39;,&#39;pos&#39;,&#39;compound&#39;],
+                VADER_COLUMNS
+            )
+        )
+    )
+
+    new_df = pd.DataFrame.from_records(
+        scores,
+        index=df.index
+    )[cols]
+
+    return pd.concat([df, new_df], axis=1)
+
+def addTextBlobSentiment(df, cols=TEXTBLOB_COLUMNS):
+    &#34;&#34;&#34;Returns input DataFrame adding TextBlob sentiment columns
+    &#34;&#34;&#34;
+    from features.utils import blobSentimentAnalyser
+
+    sentiment_list = np.vectorize(blobSentimentAnalyser)(df[&#39;text&#39;])
+    new_df = pd.DataFrame(
+        sentiment_list,
+        index=TEXTBLOB_COLUMNS,
+        columns=df.index
+    ).T[cols]
+
+    return pd.concat([df, new_df], axis=1)
+
+
+def weight_mean(x, df, weight_col, offset=0):
+    &#34;&#34;&#34;General function to calculate weighted mean depending on &#39;weight_col&#39;
+    &#34;&#34;&#34;
+    weights = df.loc[x.index, weight_col] + offset
+    if sum(weights) == 0:
+        return 0
+    return np.average(x, weights=weights)
+
+
+def tweetsPreprocess(tweets_path, freq=&#39;min&#39;, sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS, aggregate_cols=[&#39;replies&#39;, &#39;likes&#39;, &#39;retweets&#39;], start_date=None, end_date=None, nrows=None, chunksize=5e5, save_path=&#39;data/preprocess/twitter.csv&#39;, write_files=True, save_final_df=True):
+    &#34;&#34;&#34;Preprocess on tweet historical data which adds sentiment columns and aggregate them depending on different weight columns by frequency
+    &#34;&#34;&#34;
+
+    print(&#34;Loading raw file&#34;)
+    raw_df_chunks = pd.read_csv(
+        tweets_path,
+        sep=&#39;;&#39;,
+        usecols=[&#39;timestamp&#39;, &#39;text&#39;] + aggregate_cols,
+        nrows=nrows,
+        chunksize=chunksize,
+        engine=&#39;python&#39;,
+    )
+
+    all_list = []
+    saved_files = []
+    for i, raw_df in enumerate(raw_df_chunks):
+        print(f&#34;Processing chunk {i}...&#34;)
+        print(&#34;Transforming timestamp to datetime format&#34;)
+        raw_df[&#39;timestamp&#39;] = pd.to_datetime(raw_df[&#39;timestamp&#39;], format=&#39;%Y-%m-%d %H:%M:%S+00&#39;)
+
+        print(&#34;Filtering rows&#34;)
+        # Filter to tret only valid data between start_date and end_date
+        min_time = raw_df[&#39;timestamp&#39;].min()
+        max_time = raw_df[&#39;timestamp&#39;].max()
+        print(f&#39;Min timestamp {min_time}, Max timestamp {max_time}&#39;)
+
+        raw_df = raw_df[
+            (raw_df[&#39;timestamp&#39;].notnull())
+            &amp; (raw_df[&#39;text&#39;].notnull())
+            &amp; ((start_date is None) | (raw_df[&#39;timestamp&#39;] &gt;= start_date))
+            &amp; ((end_date is None) | (raw_df[&#39;timestamp&#39;] &lt;= end_date))
+        ]
+
+        print(f&#34;After filter there are {len(raw_df.index)} rows out of {chunksize:.0f}&#34;)
+        if len(raw_df.index) == 0:
+            continue
+
+        # Check and store columns used in sentiment_cols
+        vader_cols = [col for col in sentiment_cols if col in VADER_COLUMNS]
+        use_vader = len(vader_cols) &gt; 0
+
+        textBlob_cols = [col for col in sentiment_cols if col in TEXTBLOB_COLUMNS]
+        use_textBlob = len(textBlob_cols) &gt; 0
+
+        # TODO: Add moving average on sentiment
+        # Process VADER sentiment only if required
+        if use_vader:
+            print(&#34;Adding VADER Sentiment&#34;)
+            raw_df = addVaderSentiment(raw_df, vader_cols)
+            sentiment_cols = list(set(sentiment_cols + vader_cols))
+
+        # Process TextBlob sentiment only if required
+        if use_textBlob:
+            print(&#34;Adding TextBlob Sentiment&#34;)
+            raw_df = addTextBlobSentiment(raw_df, textBlob_cols)
+            sentiment_cols = list(set(sentiment_cols + textBlob_cols))
+
+        # Summarise all columns which are stored
+        columns = [&#39;timestamp&#39;] + aggregate_cols + sentiment_cols
+
+        # Use write_files when data is too large to fit in-memory
+        if write_files:
+            partial_file = os.path.splitext(save_path)
+            saved_file = f&#39;{partial_file[0]}_{i}{partial_file[1]}&#39;
+            raw_df[columns].to_csv(saved_file, sep=&#39;\t&#39;)
+            saved_files.append(saved_file)
+        else:
+            # Add to list of data
+            all_list.append(raw_df[columns])
+
+    print(&#34;All chunks processed&#34;)
+
+    print(&#34;Concatenating all the chunks&#34;)
+    if write_files:
+        # Join all CSV files by manually adding all in one file
+        if os.path.exists(save_path):
+            os.remove(save_path)
+        fout=open(save_path,&#34;a&#34;)
+        # first file:
+        for line in open(saved_files[0]):
+            fout.write(line)
+        # now the rest:    
+        if len(saved_files) &gt; 1:
+            for save_file in saved_files[1:]:
+                f = open(save_file)
+                for n, line in enumerate(f):
+                    if n != 0 and line not in [&#39;&#39;, &#39;\n&#39;]:
+                        fout.write(line)
+                f.close() # not really needed
+        fout.close()
+
+        # Read file with all the chunks together
+        all_df = pd.read_csv(save_path, sep=&#39;\t&#39;, usecols=columns)
+        all_df[&#39;timestamp&#39;] = pd.to_datetime(all_df[&#39;timestamp&#39;], format=&#39;%Y-%m-%d %H:%M:%S&#39;, errors=&#39;coerce&#39;)
+
+        # Remove temporary files
+        for f in saved_files:
+            os.remove(f)
+        os.remove(save_path)
+
+    else:
+        all_df = pd.concat(all_list)
+
+    # Floor timestamp at freq level to make sure that aggregation process is done correctly
+    print(&#34;Flooring timestamp&#34;)
+    all_df[&#39;timestamp&#39;] = all_df[&#39;timestamp&#39;].dt.floor(freq)
+
+    # TODO: Add parametrizable &#39;aggregate_func&#39; instead of directly [&#39;sum&#39;,&#39;mean&#39;]
+    # Define simple operation to do on &#39;aggregate_cols&#39; when aggregating by freq
+    func_dict = dict(
+        zip(
+            aggregate_cols,
+            [[&#39;sum&#39;,&#39;mean&#39;],] * len(aggregate_cols)
+        )
+    )
+
+    if use_vader or use_textBlob:
+        # Define weighted means to do on &#39;sentiment_cols&#39; when aggregating by freq
+        weight_cols = aggregate_cols
+        # TODO: Add parametrizable &#39;agg_sentiment_func&#39; instead of directly [&#39;mean&#39;]
+        agg_sentiment_func = [&#39;mean&#39;]
+        replace_dict = {}
+        for i, weight_col in enumerate(weight_cols):
+            agg_sentiment_func.append(
+                lambda x: weight_mean(x, all_df, weight_col=weight_col, offset=0)
+            )
+
+            replace_dict[f&#39;&lt;lambda_{i}&gt;&#39;] = f&#39;{weight_col}_mean&#39;
+
+        func_dict.update(
+            dict(
+                zip(
+                    sentiment_cols,
+                    [agg_sentiment_func,] * len(sentiment_cols)
+                )
+            )
+        )
+
+    print(&#34;Aggregating by timestamp&#34;)
+    agg_df = all_df.groupby([&#39;timestamp&#39;]).agg(func_dict)
+
+    # As weighted means are defined by lambda functions, these have to be renamed
+    agg_df.columns = list(
+        agg_df.columns.to_frame()
+            .replace(replace_dict)
+            .agg(&#39;_&#39;.join, axis=1)
+    )
+
+    print(&#34;Filling All Time data&#34;)
+    # Fill all the seconds between first and last second of data
+    df = fillAllTime(
+        agg_df,
+        freq=freq
+    )
+
+    # Add 0/1 column defining each freq when it has not been tweets
+    df[&#39;no_tweets&#39;] = df.iloc[:,0].isnull().astype(&#39;int8&#39;)
+
+    # Filling nulls (frequencies where it has not been tweets) with 0&#39;s
+    df = df.fillna(0)
+
+    if save_final_df:
+        partial_file = os.path.splitext(save_path)
+        save_final_path = f&#39;{partial_file[0]}_{start_date}_-_{end_date}{partial_file[1]}&#39;
+        df.to_csv(save_final_path, sep=&#39;\t&#39;, index_label=&#39;timestamp&#39;)
+
+    return df
+
+
+if __name__ == &#34;__main__&#34;:
+    # Scrapped from twitters from 2016-01-01 to 2019-03-29, Collecting Tweets containing Bitcoin or BTC
+    tweets_path = &#39;data/sources/tweets_historical.csv&#39;
+
+    start_date=&#39;2019-01-01&#39;
+    end_date=&#39;2019-03-28&#39;
+
+    freq = &#39;min&#39;
+
+    # TODO: Save tweets sentiment independent of prices and one file per date range and frequency
+
+    print(&#34;Start tweetsPreprocess&#34;)
+    tweets_df = tweetsPreprocess(
+        tweets_path,
+        freq=freq,
+        # sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS,
+        # sentiment_cols=[&#39;Compound&#39;, &#39;Polarity&#39;],
+        aggregate_cols=[&#39;replies&#39;, &#39;likes&#39;, &#39;retweets&#39;],
+        start_date=start_date,
+        end_date=end_date,
+        nrows=None,
+        chunksize=5e5,
+        save_path=&#39;data/preprocess/twitter.csv&#39;,
+        write_files=False
+    )</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="sentiment_trader.features.tweets_preprocess.addTextBlobSentiment"><code class="name flex">
+<span>def <span class="ident">addTextBlobSentiment</span></span>(<span>df, cols=['Polarity', 'Subjectivity'])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns input DataFrame adding TextBlob sentiment columns</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1d683d529224035ed66b4b658a1f49bab4246382/features\tweets_preprocess.py#L53-L65" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">def addTextBlobSentiment(df, cols=TEXTBLOB_COLUMNS):
+    &#34;&#34;&#34;Returns input DataFrame adding TextBlob sentiment columns
+    &#34;&#34;&#34;
+    from features.utils import blobSentimentAnalyser
+
+    sentiment_list = np.vectorize(blobSentimentAnalyser)(df[&#39;text&#39;])
+    new_df = pd.DataFrame(
+        sentiment_list,
+        index=TEXTBLOB_COLUMNS,
+        columns=df.index
+    ).T[cols]
+
+    return pd.concat([df, new_df], axis=1)</code></pre>
+</details>
+</dd>
+<dt id="sentiment_trader.features.tweets_preprocess.addVaderSentiment"><code class="name flex">
+<span>def <span class="ident">addVaderSentiment</span></span>(<span>df, cols=['Negative', 'Neutral', 'Positive', 'Compound'])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns input DataFrame adding VADER sentiment columns</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1d683d529224035ed66b4b658a1f49bab4246382/features\tweets_preprocess.py#L27-L51" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">def addVaderSentiment(df, cols=VADER_COLUMNS):
+    &#34;&#34;&#34;Returns input DataFrame adding VADER sentiment columns
+    &#34;&#34;&#34;
+    from features.utils import vec_vaderSentimentAnalyser
+    from nltk.sentiment.vader import SentimentIntensityAnalyzer
+
+    analyser = SentimentIntensityAnalyzer()
+    
+    scores = vec_vaderSentimentAnalyser(
+        df[&#39;text&#39;],
+        analyser,
+        rename_dict=dict(
+            zip(
+                [&#39;neg&#39;,&#39;neu&#39;,&#39;pos&#39;,&#39;compound&#39;],
+                VADER_COLUMNS
+            )
+        )
+    )
+
+    new_df = pd.DataFrame.from_records(
+        scores,
+        index=df.index
+    )[cols]
+
+    return pd.concat([df, new_df], axis=1)</code></pre>
+</details>
+</dd>
+<dt id="sentiment_trader.features.tweets_preprocess.tweetsPreprocess"><code class="name flex">
+<span>def <span class="ident">tweetsPreprocess</span></span>(<span>tweets_path, freq='min', sentiment_cols=['Negative', 'Neutral', 'Positive', 'Compound', 'Polarity', 'Subjectivity'], aggregate_cols=['replies', 'likes', 'retweets'], start_date=None, end_date=None, nrows=None, chunksize=500000.0, save_path='data/preprocess/twitter.csv', write_files=True, save_final_df=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Preprocess on tweet historical data which adds sentiment columns and aggregate them depending on different weight columns by frequency</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1d683d529224035ed66b4b658a1f49bab4246382/features\tweets_preprocess.py#L77-L244" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">def tweetsPreprocess(tweets_path, freq=&#39;min&#39;, sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS, aggregate_cols=[&#39;replies&#39;, &#39;likes&#39;, &#39;retweets&#39;], start_date=None, end_date=None, nrows=None, chunksize=5e5, save_path=&#39;data/preprocess/twitter.csv&#39;, write_files=True, save_final_df=True):
+    &#34;&#34;&#34;Preprocess on tweet historical data which adds sentiment columns and aggregate them depending on different weight columns by frequency
+    &#34;&#34;&#34;
+
+    print(&#34;Loading raw file&#34;)
+    raw_df_chunks = pd.read_csv(
+        tweets_path,
+        sep=&#39;;&#39;,
+        usecols=[&#39;timestamp&#39;, &#39;text&#39;] + aggregate_cols,
+        nrows=nrows,
+        chunksize=chunksize,
+        engine=&#39;python&#39;,
+    )
+
+    all_list = []
+    saved_files = []
+    for i, raw_df in enumerate(raw_df_chunks):
+        print(f&#34;Processing chunk {i}...&#34;)
+        print(&#34;Transforming timestamp to datetime format&#34;)
+        raw_df[&#39;timestamp&#39;] = pd.to_datetime(raw_df[&#39;timestamp&#39;], format=&#39;%Y-%m-%d %H:%M:%S+00&#39;)
+
+        print(&#34;Filtering rows&#34;)
+        # Filter to tret only valid data between start_date and end_date
+        min_time = raw_df[&#39;timestamp&#39;].min()
+        max_time = raw_df[&#39;timestamp&#39;].max()
+        print(f&#39;Min timestamp {min_time}, Max timestamp {max_time}&#39;)
+
+        raw_df = raw_df[
+            (raw_df[&#39;timestamp&#39;].notnull())
+            &amp; (raw_df[&#39;text&#39;].notnull())
+            &amp; ((start_date is None) | (raw_df[&#39;timestamp&#39;] &gt;= start_date))
+            &amp; ((end_date is None) | (raw_df[&#39;timestamp&#39;] &lt;= end_date))
+        ]
+
+        print(f&#34;After filter there are {len(raw_df.index)} rows out of {chunksize:.0f}&#34;)
+        if len(raw_df.index) == 0:
+            continue
+
+        # Check and store columns used in sentiment_cols
+        vader_cols = [col for col in sentiment_cols if col in VADER_COLUMNS]
+        use_vader = len(vader_cols) &gt; 0
+
+        textBlob_cols = [col for col in sentiment_cols if col in TEXTBLOB_COLUMNS]
+        use_textBlob = len(textBlob_cols) &gt; 0
+
+        # TODO: Add moving average on sentiment
+        # Process VADER sentiment only if required
+        if use_vader:
+            print(&#34;Adding VADER Sentiment&#34;)
+            raw_df = addVaderSentiment(raw_df, vader_cols)
+            sentiment_cols = list(set(sentiment_cols + vader_cols))
+
+        # Process TextBlob sentiment only if required
+        if use_textBlob:
+            print(&#34;Adding TextBlob Sentiment&#34;)
+            raw_df = addTextBlobSentiment(raw_df, textBlob_cols)
+            sentiment_cols = list(set(sentiment_cols + textBlob_cols))
+
+        # Summarise all columns which are stored
+        columns = [&#39;timestamp&#39;] + aggregate_cols + sentiment_cols
+
+        # Use write_files when data is too large to fit in-memory
+        if write_files:
+            partial_file = os.path.splitext(save_path)
+            saved_file = f&#39;{partial_file[0]}_{i}{partial_file[1]}&#39;
+            raw_df[columns].to_csv(saved_file, sep=&#39;\t&#39;)
+            saved_files.append(saved_file)
+        else:
+            # Add to list of data
+            all_list.append(raw_df[columns])
+
+    print(&#34;All chunks processed&#34;)
+
+    print(&#34;Concatenating all the chunks&#34;)
+    if write_files:
+        # Join all CSV files by manually adding all in one file
+        if os.path.exists(save_path):
+            os.remove(save_path)
+        fout=open(save_path,&#34;a&#34;)
+        # first file:
+        for line in open(saved_files[0]):
+            fout.write(line)
+        # now the rest:    
+        if len(saved_files) &gt; 1:
+            for save_file in saved_files[1:]:
+                f = open(save_file)
+                for n, line in enumerate(f):
+                    if n != 0 and line not in [&#39;&#39;, &#39;\n&#39;]:
+                        fout.write(line)
+                f.close() # not really needed
+        fout.close()
+
+        # Read file with all the chunks together
+        all_df = pd.read_csv(save_path, sep=&#39;\t&#39;, usecols=columns)
+        all_df[&#39;timestamp&#39;] = pd.to_datetime(all_df[&#39;timestamp&#39;], format=&#39;%Y-%m-%d %H:%M:%S&#39;, errors=&#39;coerce&#39;)
+
+        # Remove temporary files
+        for f in saved_files:
+            os.remove(f)
+        os.remove(save_path)
+
+    else:
+        all_df = pd.concat(all_list)
+
+    # Floor timestamp at freq level to make sure that aggregation process is done correctly
+    print(&#34;Flooring timestamp&#34;)
+    all_df[&#39;timestamp&#39;] = all_df[&#39;timestamp&#39;].dt.floor(freq)
+
+    # TODO: Add parametrizable &#39;aggregate_func&#39; instead of directly [&#39;sum&#39;,&#39;mean&#39;]
+    # Define simple operation to do on &#39;aggregate_cols&#39; when aggregating by freq
+    func_dict = dict(
+        zip(
+            aggregate_cols,
+            [[&#39;sum&#39;,&#39;mean&#39;],] * len(aggregate_cols)
+        )
+    )
+
+    if use_vader or use_textBlob:
+        # Define weighted means to do on &#39;sentiment_cols&#39; when aggregating by freq
+        weight_cols = aggregate_cols
+        # TODO: Add parametrizable &#39;agg_sentiment_func&#39; instead of directly [&#39;mean&#39;]
+        agg_sentiment_func = [&#39;mean&#39;]
+        replace_dict = {}
+        for i, weight_col in enumerate(weight_cols):
+            agg_sentiment_func.append(
+                lambda x: weight_mean(x, all_df, weight_col=weight_col, offset=0)
+            )
+
+            replace_dict[f&#39;&lt;lambda_{i}&gt;&#39;] = f&#39;{weight_col}_mean&#39;
+
+        func_dict.update(
+            dict(
+                zip(
+                    sentiment_cols,
+                    [agg_sentiment_func,] * len(sentiment_cols)
+                )
+            )
+        )
+
+    print(&#34;Aggregating by timestamp&#34;)
+    agg_df = all_df.groupby([&#39;timestamp&#39;]).agg(func_dict)
+
+    # As weighted means are defined by lambda functions, these have to be renamed
+    agg_df.columns = list(
+        agg_df.columns.to_frame()
+            .replace(replace_dict)
+            .agg(&#39;_&#39;.join, axis=1)
+    )
+
+    print(&#34;Filling All Time data&#34;)
+    # Fill all the seconds between first and last second of data
+    df = fillAllTime(
+        agg_df,
+        freq=freq
+    )
+
+    # Add 0/1 column defining each freq when it has not been tweets
+    df[&#39;no_tweets&#39;] = df.iloc[:,0].isnull().astype(&#39;int8&#39;)
+
+    # Filling nulls (frequencies where it has not been tweets) with 0&#39;s
+    df = df.fillna(0)
+
+    if save_final_df:
+        partial_file = os.path.splitext(save_path)
+        save_final_path = f&#39;{partial_file[0]}_{start_date}_-_{end_date}{partial_file[1]}&#39;
+        df.to_csv(save_final_path, sep=&#39;\t&#39;, index_label=&#39;timestamp&#39;)
+
+    return df</code></pre>
+</details>
+</dd>
+<dt id="sentiment_trader.features.tweets_preprocess.weight_mean"><code class="name flex">
+<span>def <span class="ident">weight_mean</span></span>(<span>x, df, weight_col, offset=0)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>General function to calculate weighted mean depending on 'weight_col'</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1d683d529224035ed66b4b658a1f49bab4246382/features\tweets_preprocess.py#L68-L74" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">def weight_mean(x, df, weight_col, offset=0):
+    &#34;&#34;&#34;General function to calculate weighted mean depending on &#39;weight_col&#39;
+    &#34;&#34;&#34;
+    weights = df.loc[x.index, weight_col] + offset
+    if sum(weights) == 0:
+        return 0
+    return np.average(x, weights=weights)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<div class="gcse-search" style="height: 70px"
+data-as_oq="inurl:github.com/lluissalord/sentiment_trader site:sentiment_trader.github.io site:sentiment_trader.website"
+data-gaCategoryParameter="sentiment_trader.features.tweets_preprocess">
+</div>
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="sentiment_trader.features" href="index.html">sentiment_trader.features</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="sentiment_trader.features.tweets_preprocess.addTextBlobSentiment" href="#sentiment_trader.features.tweets_preprocess.addTextBlobSentiment">addTextBlobSentiment</a></code></li>
+<li><code><a title="sentiment_trader.features.tweets_preprocess.addVaderSentiment" href="#sentiment_trader.features.tweets_preprocess.addVaderSentiment">addVaderSentiment</a></code></li>
+<li><code><a title="sentiment_trader.features.tweets_preprocess.tweetsPreprocess" href="#sentiment_trader.features.tweets_preprocess.tweetsPreprocess">tweetsPreprocess</a></code></li>
+<li><code><a title="sentiment_trader.features.tweets_preprocess.weight_mean" href="#sentiment_trader.features.tweets_preprocess.weight_mean">weight_mean</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.4</a>.</p>
+</footer>
+</body>
+</html>

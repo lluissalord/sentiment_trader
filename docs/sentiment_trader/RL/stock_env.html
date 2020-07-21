@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.4" />
+<title>sentiment_trader.RL.stock_env API documentation</title>
+<meta name="description" content="Stock environment class based on Gym_anytrading environment" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/atom-one-dark.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<link rel="preconnect" href="https://www.google.com">
+<script async src="https://cse.google.com/cse.js?cx=017837193012385208679:pey8ky8gdqw"></script>
+<style>
+.gsc-control-cse {padding:0 !important;margin-top:1em}
+body.gsc-overflow-hidden #sidebar {overflow: visible;}
+</style>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS_CHTML" integrity="sha256-kZafAc6mZvK3W3v1pHOcUix30OHQN6pU/NO2oFkqZVw=" crossorigin></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js" integrity="sha256-eOgo0OtLL4cdq7RdwRUiGKLX9XsIJ7nGhWEKbohmVAQ=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+<style>.homelink{display:block;font-size:2em;font-weight:bold;color:#555;padding-bottom:.5em;border-bottom:1px solid silver}.homelink:hover{color:inherit}.homelink img{max-width:20%;max-height:5em;margin:auto;margin-bottom:.3em}</style>
+<link rel="canonical" href="https://pdoc3.github.io/pdoc/doc/sentiment_trader/RL/stock_env.html">
+<link rel="icon" href="https://pdoc3.github.io/pdoc/logo.png">
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>sentiment_trader.RL.stock_env</code></h1>
+</header>
+<section id="section-intro">
+<p>Stock environment class based on Gym_anytrading environment</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1d683d529224035ed66b4b658a1f49bab4246382/RL\stock_env.py#L0-L162" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">&#34;&#34;&#34; Stock environment class based on Gym_anytrading environment &#34;&#34;&#34;
+
+import pandas as pd
+import numpy as np
+
+from gym import spaces
+from gym_anytrading.envs import TradingEnv, StocksEnv, Actions, Positions
+
+REVENUE_REWARD = 1
+PRICE_REWARD = 2
+
+# TODO: Normalize somehow the reward to be more standard between runs, independent on the data is processing
+# TODO: Plot training info during training to be able to track it
+class RLStocksEnv(StocksEnv):
+
+    def __init__(self, df, window_size, frame_bound, steps_per_episode, is_training, position_as_observation=True, constant_step=False, min_steps_per_episode=2, reward_type=REVENUE_REWARD, max_final_reward=100, max_step_reward=1, price_column=&#39;close&#39;, feature_columns=None, seed=None):
+
+        self.price_column = price_column
+        
+        if feature_columns is None:
+            self.feature_columns = list(df.columns)
+        else:
+            self.feature_columns = feature_columns
+
+        super().__init__(df, window_size, frame_bound)
+        
+        if min_steps_per_episode &lt;= 0:
+            raise ValueError(f&#39;min_steps_per_episode must be bigger than 0&#39;)
+
+        self.seed(seed)
+        self.steps_per_episode = steps_per_episode
+        self.max_steps_per_episode = steps_per_episode
+        self.min_steps_per_episode = min_steps_per_episode
+        self.is_training = is_training
+
+        self.trade_fee_bid_percent = 0.0 # 0.01  # unit
+        self.trade_fee_ask_percent = 0.0 # 0.005  # unit
+
+        self.max_possible_profit_df = self.max_possible_profit()
+
+        self.position_as_observation = position_as_observation
+        self.shape = (window_size, self.signal_features.shape[1] + int(position_as_observation))
+        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=self.shape, dtype=np.float32)
+
+        self.constant_step = constant_step
+
+        self.max_final_reward = max_final_reward
+        self.max_step_reward = max_step_reward
+
+        self.reward_type = reward_type
+
+    def _process_data(self):
+        start = self.frame_bound[0] - self.window_size
+        end = self.frame_bound[1]
+        prices = self.df.loc[:, self.price_column].to_numpy()[start:end]
+        signal_features = self.df[self.feature_columns].to_numpy()[start:end]
+        return prices, signal_features
+
+    def reset(self, start_tick=None):
+        if not self.constant_step:
+            self.steps_per_episode = self.np_random.randint(self.max_steps_per_episode - self.min_steps_per_episode) + self.min_steps_per_episode
+
+        if self.is_training:
+            if start_tick is None:
+                self._start_tick = min(
+                    self.np_random.randint(self.frame_bound[1] - 1 - self.steps_per_episode) + self.window_size,
+                    self.frame_bound[1] - self.steps_per_episode - 1
+                )
+            else:
+                self._start_tick = start_tick
+            self._end_tick = min(
+                self._start_tick + self.steps_per_episode,
+                self.frame_bound[1] - 1
+            )
+            
+            self.max_possible_profit_df = self.max_possible_profit()
+
+        return super().reset()
+
+    def calculate_revenue_ratio(self):
+        # TODO: Check if should be this tick or the previous one
+        max_possible_revenue = self.max_possible_profit_df.loc[self._current_tick, &#39;max_profit&#39;] - 1
+        revenue = self._total_profit - 1
+        if max_possible_revenue &gt; 0 and revenue &gt;= 0:
+            revenue_ratio = revenue / max_possible_revenue
+        # TODO: Check if it is good to have this behaviour or if it will impact too much on not buy/sell in a lot of moments
+        elif max_possible_revenue == 0 and revenue == 0:
+            revenue_ratio = 1
+        # TODO: Check if use this or better to set to 0
+        else:
+            # revenue_ratio = revenue
+            revenue_ratio = 0
+        return revenue_ratio
+
+    def step(self, action):
+        observation, reward, done, info = super().step(action)
+
+        if self.reward_type == REVENUE_REWARD:
+            revenue_ratio = self.calculate_revenue_ratio()
+
+            if done:
+                reward = self.max_final_reward * revenue_ratio
+            else:
+                reward = self.max_step_reward * revenue_ratio
+
+                # Normalize according to the number of steps of this episode
+                reward /= (self._end_tick - self._start_tick)
+        elif self.reward_type == PRICE_REWARD:
+            reward /= self.prices[self._last_trade_tick]
+            
+        return observation, reward, done, info
+
+    def _get_observation(self):
+        features = self.signal_features[(self._current_tick-self.window_size):self._current_tick]
+        
+        if self.position_as_observation:
+            positions = np.expand_dims(
+                np.array(
+                    list(
+                        map(
+                            lambda position: position.value if position is not None else 0,
+                            self._position_history[-self.window_size:]
+                        )
+                    )
+                ),
+                axis=1
+            )
+            return np.append(
+                features,
+                positions,
+                axis=1
+            )
+        else:
+            return features
+
+    def max_possible_profit(self):
+        current_tick = self._start_tick
+        last_trade_tick = current_tick - 1
+        profit = 1.
+
+        max_possible_profit_df = pd.DataFrame(index=range(self._start_tick, self._end_tick + 1), columns=[&#39;max_profit&#39;])
+        max_possible_profit_df.loc[current_tick, &#39;max_profit&#39;] = profit
+
+        while current_tick &lt;= self._end_tick:
+            if self.prices[current_tick] &lt; self.prices[current_tick - 1]:
+                while (current_tick &lt;= self._end_tick and
+                       self.prices[current_tick] &lt; self.prices[current_tick - 1]): 
+                    current_tick += 1
+            else:
+                while (current_tick &lt;= self._end_tick and
+                       self.prices[current_tick] &gt;= self.prices[current_tick - 1]):
+                    
+                    shares = (profit * (1 - self.trade_fee_ask_percent)) / self.prices[last_trade_tick]
+                    temp_profit = (shares * (1 - self.trade_fee_bid_percent)) * self.prices[current_tick]
+                    max_possible_profit_df.loc[current_tick, &#39;max_profit&#39;] = temp_profit
+
+                    current_tick += 1
+                profit = temp_profit
+            last_trade_tick = current_tick - 1
+
+        max_possible_profit_df = max_possible_profit_df.fillna(method=&#39;ffill&#39;)
+
+        return max_possible_profit_df</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="sentiment_trader.RL.stock_env.RLStocksEnv"><code class="flex name class">
+<span>class <span class="ident">RLStocksEnv</span></span>
+<span>(</span><span>df, window_size, frame_bound, steps_per_episode, is_training, position_as_observation=True, constant_step=False, min_steps_per_episode=2, reward_type=1, max_final_reward=100, max_step_reward=1, price_column='close', feature_columns=None, seed=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>The main OpenAI Gym class. It encapsulates an environment with
+arbitrary behind-the-scenes dynamics. An environment can be
+partially or fully observed.</p>
+<p>The main API methods that users of this class need to know are:</p>
+<pre><code>step
+reset
+render
+close
+seed
+</code></pre>
+<p>And set the following attributes:</p>
+<pre><code>action_space: The Space object corresponding to valid actions
+observation_space: The Space object corresponding to valid observations
+reward_range: A tuple corresponding to the min and max possible rewards
+</code></pre>
+<p>Note: a default reward range set to [-inf,+inf] already exists. Set it if you want a narrower range.</p>
+<p>The methods are accessed publicly as "step", "reset", etc.. The
+non-underscored versions are wrapper methods to which we may add
+functionality over time.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1d683d529224035ed66b4b658a1f49bab4246382/RL\stock_env.py#L14-L163" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">class RLStocksEnv(StocksEnv):
+
+    def __init__(self, df, window_size, frame_bound, steps_per_episode, is_training, position_as_observation=True, constant_step=False, min_steps_per_episode=2, reward_type=REVENUE_REWARD, max_final_reward=100, max_step_reward=1, price_column=&#39;close&#39;, feature_columns=None, seed=None):
+
+        self.price_column = price_column
+        
+        if feature_columns is None:
+            self.feature_columns = list(df.columns)
+        else:
+            self.feature_columns = feature_columns
+
+        super().__init__(df, window_size, frame_bound)
+        
+        if min_steps_per_episode &lt;= 0:
+            raise ValueError(f&#39;min_steps_per_episode must be bigger than 0&#39;)
+
+        self.seed(seed)
+        self.steps_per_episode = steps_per_episode
+        self.max_steps_per_episode = steps_per_episode
+        self.min_steps_per_episode = min_steps_per_episode
+        self.is_training = is_training
+
+        self.trade_fee_bid_percent = 0.0 # 0.01  # unit
+        self.trade_fee_ask_percent = 0.0 # 0.005  # unit
+
+        self.max_possible_profit_df = self.max_possible_profit()
+
+        self.position_as_observation = position_as_observation
+        self.shape = (window_size, self.signal_features.shape[1] + int(position_as_observation))
+        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=self.shape, dtype=np.float32)
+
+        self.constant_step = constant_step
+
+        self.max_final_reward = max_final_reward
+        self.max_step_reward = max_step_reward
+
+        self.reward_type = reward_type
+
+    def _process_data(self):
+        start = self.frame_bound[0] - self.window_size
+        end = self.frame_bound[1]
+        prices = self.df.loc[:, self.price_column].to_numpy()[start:end]
+        signal_features = self.df[self.feature_columns].to_numpy()[start:end]
+        return prices, signal_features
+
+    def reset(self, start_tick=None):
+        if not self.constant_step:
+            self.steps_per_episode = self.np_random.randint(self.max_steps_per_episode - self.min_steps_per_episode) + self.min_steps_per_episode
+
+        if self.is_training:
+            if start_tick is None:
+                self._start_tick = min(
+                    self.np_random.randint(self.frame_bound[1] - 1 - self.steps_per_episode) + self.window_size,
+                    self.frame_bound[1] - self.steps_per_episode - 1
+                )
+            else:
+                self._start_tick = start_tick
+            self._end_tick = min(
+                self._start_tick + self.steps_per_episode,
+                self.frame_bound[1] - 1
+            )
+            
+            self.max_possible_profit_df = self.max_possible_profit()
+
+        return super().reset()
+
+    def calculate_revenue_ratio(self):
+        # TODO: Check if should be this tick or the previous one
+        max_possible_revenue = self.max_possible_profit_df.loc[self._current_tick, &#39;max_profit&#39;] - 1
+        revenue = self._total_profit - 1
+        if max_possible_revenue &gt; 0 and revenue &gt;= 0:
+            revenue_ratio = revenue / max_possible_revenue
+        # TODO: Check if it is good to have this behaviour or if it will impact too much on not buy/sell in a lot of moments
+        elif max_possible_revenue == 0 and revenue == 0:
+            revenue_ratio = 1
+        # TODO: Check if use this or better to set to 0
+        else:
+            # revenue_ratio = revenue
+            revenue_ratio = 0
+        return revenue_ratio
+
+    def step(self, action):
+        observation, reward, done, info = super().step(action)
+
+        if self.reward_type == REVENUE_REWARD:
+            revenue_ratio = self.calculate_revenue_ratio()
+
+            if done:
+                reward = self.max_final_reward * revenue_ratio
+            else:
+                reward = self.max_step_reward * revenue_ratio
+
+                # Normalize according to the number of steps of this episode
+                reward /= (self._end_tick - self._start_tick)
+        elif self.reward_type == PRICE_REWARD:
+            reward /= self.prices[self._last_trade_tick]
+            
+        return observation, reward, done, info
+
+    def _get_observation(self):
+        features = self.signal_features[(self._current_tick-self.window_size):self._current_tick]
+        
+        if self.position_as_observation:
+            positions = np.expand_dims(
+                np.array(
+                    list(
+                        map(
+                            lambda position: position.value if position is not None else 0,
+                            self._position_history[-self.window_size:]
+                        )
+                    )
+                ),
+                axis=1
+            )
+            return np.append(
+                features,
+                positions,
+                axis=1
+            )
+        else:
+            return features
+
+    def max_possible_profit(self):
+        current_tick = self._start_tick
+        last_trade_tick = current_tick - 1
+        profit = 1.
+
+        max_possible_profit_df = pd.DataFrame(index=range(self._start_tick, self._end_tick + 1), columns=[&#39;max_profit&#39;])
+        max_possible_profit_df.loc[current_tick, &#39;max_profit&#39;] = profit
+
+        while current_tick &lt;= self._end_tick:
+            if self.prices[current_tick] &lt; self.prices[current_tick - 1]:
+                while (current_tick &lt;= self._end_tick and
+                       self.prices[current_tick] &lt; self.prices[current_tick - 1]): 
+                    current_tick += 1
+            else:
+                while (current_tick &lt;= self._end_tick and
+                       self.prices[current_tick] &gt;= self.prices[current_tick - 1]):
+                    
+                    shares = (profit * (1 - self.trade_fee_ask_percent)) / self.prices[last_trade_tick]
+                    temp_profit = (shares * (1 - self.trade_fee_bid_percent)) * self.prices[current_tick]
+                    max_possible_profit_df.loc[current_tick, &#39;max_profit&#39;] = temp_profit
+
+                    current_tick += 1
+                profit = temp_profit
+            last_trade_tick = current_tick - 1
+
+        max_possible_profit_df = max_possible_profit_df.fillna(method=&#39;ffill&#39;)
+
+        return max_possible_profit_df</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>gym_anytrading.envs.stocks_env.StocksEnv</li>
+<li>gym_anytrading.envs.trading_env.TradingEnv</li>
+<li>gym.core.Env</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="sentiment_trader.RL.stock_env.RLStocksEnv.calculate_revenue_ratio"><code class="name flex">
+<span>def <span class="ident">calculate_revenue_ratio</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1d683d529224035ed66b4b658a1f49bab4246382/RL\stock_env.py#L80-L93" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">def calculate_revenue_ratio(self):
+    # TODO: Check if should be this tick or the previous one
+    max_possible_revenue = self.max_possible_profit_df.loc[self._current_tick, &#39;max_profit&#39;] - 1
+    revenue = self._total_profit - 1
+    if max_possible_revenue &gt; 0 and revenue &gt;= 0:
+        revenue_ratio = revenue / max_possible_revenue
+    # TODO: Check if it is good to have this behaviour or if it will impact too much on not buy/sell in a lot of moments
+    elif max_possible_revenue == 0 and revenue == 0:
+        revenue_ratio = 1
+    # TODO: Check if use this or better to set to 0
+    else:
+        # revenue_ratio = revenue
+        revenue_ratio = 0
+    return revenue_ratio</code></pre>
+</details>
+</dd>
+<dt id="sentiment_trader.RL.stock_env.RLStocksEnv.max_possible_profit"><code class="name flex">
+<span>def <span class="ident">max_possible_profit</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1d683d529224035ed66b4b658a1f49bab4246382/RL\stock_env.py#L136-L163" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">def max_possible_profit(self):
+    current_tick = self._start_tick
+    last_trade_tick = current_tick - 1
+    profit = 1.
+
+    max_possible_profit_df = pd.DataFrame(index=range(self._start_tick, self._end_tick + 1), columns=[&#39;max_profit&#39;])
+    max_possible_profit_df.loc[current_tick, &#39;max_profit&#39;] = profit
+
+    while current_tick &lt;= self._end_tick:
+        if self.prices[current_tick] &lt; self.prices[current_tick - 1]:
+            while (current_tick &lt;= self._end_tick and
+                   self.prices[current_tick] &lt; self.prices[current_tick - 1]): 
+                current_tick += 1
+        else:
+            while (current_tick &lt;= self._end_tick and
+                   self.prices[current_tick] &gt;= self.prices[current_tick - 1]):
+                
+                shares = (profit * (1 - self.trade_fee_ask_percent)) / self.prices[last_trade_tick]
+                temp_profit = (shares * (1 - self.trade_fee_bid_percent)) * self.prices[current_tick]
+                max_possible_profit_df.loc[current_tick, &#39;max_profit&#39;] = temp_profit
+
+                current_tick += 1
+            profit = temp_profit
+        last_trade_tick = current_tick - 1
+
+    max_possible_profit_df = max_possible_profit_df.fillna(method=&#39;ffill&#39;)
+
+    return max_possible_profit_df</code></pre>
+</details>
+</dd>
+<dt id="sentiment_trader.RL.stock_env.RLStocksEnv.reset"><code class="name flex">
+<span>def <span class="ident">reset</span></span>(<span>self, start_tick=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Resets the state of the environment and returns an initial observation.</p>
+<h2 id="returns">Returns</h2>
+<p>observation (object): the initial observation.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1d683d529224035ed66b4b658a1f49bab4246382/RL\stock_env.py#L59-L78" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">def reset(self, start_tick=None):
+    if not self.constant_step:
+        self.steps_per_episode = self.np_random.randint(self.max_steps_per_episode - self.min_steps_per_episode) + self.min_steps_per_episode
+
+    if self.is_training:
+        if start_tick is None:
+            self._start_tick = min(
+                self.np_random.randint(self.frame_bound[1] - 1 - self.steps_per_episode) + self.window_size,
+                self.frame_bound[1] - self.steps_per_episode - 1
+            )
+        else:
+            self._start_tick = start_tick
+        self._end_tick = min(
+            self._start_tick + self.steps_per_episode,
+            self.frame_bound[1] - 1
+        )
+        
+        self.max_possible_profit_df = self.max_possible_profit()
+
+    return super().reset()</code></pre>
+</details>
+</dd>
+<dt id="sentiment_trader.RL.stock_env.RLStocksEnv.step"><code class="name flex">
+<span>def <span class="ident">step</span></span>(<span>self, action)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Run one timestep of the environment's dynamics. When end of
+episode is reached, you are responsible for calling <code>reset()</code>
+to reset this environment's state.</p>
+<p>Accepts an action and returns a tuple (observation, reward, done, info).</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>action</code></strong> :&ensp;<code>object</code></dt>
+<dd>an action provided by the agent</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>observation (object): agent's observation of the current environment
+reward (float) : amount of reward returned after previous action
+done (bool): whether the episode has ended, in which case further step() calls will return undefined results
+info (dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1d683d529224035ed66b4b658a1f49bab4246382/RL\stock_env.py#L95-L111" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">def step(self, action):
+    observation, reward, done, info = super().step(action)
+
+    if self.reward_type == REVENUE_REWARD:
+        revenue_ratio = self.calculate_revenue_ratio()
+
+        if done:
+            reward = self.max_final_reward * revenue_ratio
+        else:
+            reward = self.max_step_reward * revenue_ratio
+
+            # Normalize according to the number of steps of this episode
+            reward /= (self._end_tick - self._start_tick)
+    elif self.reward_type == PRICE_REWARD:
+        reward /= self.prices[self._last_trade_tick]
+        
+    return observation, reward, done, info</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="gcse-search" style="height: 70px"
+data-as_oq="inurl:github.com/lluissalord/sentiment_trader site:sentiment_trader.github.io site:sentiment_trader.website"
+data-gaCategoryParameter="sentiment_trader.RL.stock_env">
+</div>
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="sentiment_trader.RL" href="index.html">sentiment_trader.RL</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="sentiment_trader.RL.stock_env.RLStocksEnv" href="#sentiment_trader.RL.stock_env.RLStocksEnv">RLStocksEnv</a></code></h4>
+<ul class="">
+<li><code><a title="sentiment_trader.RL.stock_env.RLStocksEnv.calculate_revenue_ratio" href="#sentiment_trader.RL.stock_env.RLStocksEnv.calculate_revenue_ratio">calculate_revenue_ratio</a></code></li>
+<li><code><a title="sentiment_trader.RL.stock_env.RLStocksEnv.max_possible_profit" href="#sentiment_trader.RL.stock_env.RLStocksEnv.max_possible_profit">max_possible_profit</a></code></li>
+<li><code><a title="sentiment_trader.RL.stock_env.RLStocksEnv.reset" href="#sentiment_trader.RL.stock_env.RLStocksEnv.reset">reset</a></code></li>
+<li><code><a title="sentiment_trader.RL.stock_env.RLStocksEnv.step" href="#sentiment_trader.RL.stock_env.RLStocksEnv.step">step</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.4</a>.</p>
+</footer>
+</body>
+</html>

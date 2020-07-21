@@ -1,3 +1,5 @@
+""" Stock environment class based on Gym_anytrading environment """
+
 import pandas as pd
 import numpy as np
 

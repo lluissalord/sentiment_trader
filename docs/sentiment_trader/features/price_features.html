@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.4" />
+<title>sentiment_trader.features.price_features API documentation</title>
+<meta name="description" content="Price feature engineering" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/atom-one-dark.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<link rel="preconnect" href="https://www.google.com">
+<script async src="https://cse.google.com/cse.js?cx=017837193012385208679:pey8ky8gdqw"></script>
+<style>
+.gsc-control-cse {padding:0 !important;margin-top:1em}
+body.gsc-overflow-hidden #sidebar {overflow: visible;}
+</style>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS_CHTML" integrity="sha256-kZafAc6mZvK3W3v1pHOcUix30OHQN6pU/NO2oFkqZVw=" crossorigin></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js" integrity="sha256-eOgo0OtLL4cdq7RdwRUiGKLX9XsIJ7nGhWEKbohmVAQ=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+<style>.homelink{display:block;font-size:2em;font-weight:bold;color:#555;padding-bottom:.5em;border-bottom:1px solid silver}.homelink:hover{color:inherit}.homelink img{max-width:20%;max-height:5em;margin:auto;margin-bottom:.3em}</style>
+<link rel="canonical" href="https://pdoc3.github.io/pdoc/doc/sentiment_trader/features/price_features.html">
+<link rel="icon" href="https://pdoc3.github.io/pdoc/logo.png">
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>sentiment_trader.features.price_features</code></h1>
+</header>
+<section id="section-intro">
+<p>Price feature engineering</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1d683d529224035ed66b4b658a1f49bab4246382/features\price_features.py#L0-L334" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">&#34;&#34;&#34; Price feature engineering &#34;&#34;&#34;
+
+import pickle
+import os
+from collections import Counter
+
+from features.utils import fillAllTime
+
+import numpy as np
+import pandas as pd
+import pandas_ta as ta
+
+eps = 1e-4
+
+# There are some features which range of values is already known and estimation is not required
+# Besides, this dictionary helps to know how to normalize each feature
+KNOWN_COLS = {
+    &#39;0_1&#39;: {
+        &#39;cols&#39;: [],
+        &#39;add_cols&#39;: True,
+        &#39;normalize&#39;: True,
+        &#39;max&#39;: 1,
+        &#39;min&#39;: 0,
+        &#39;std&#39;: eps,
+    },
+    &#39;-1_1&#39;: {
+        &#39;cols&#39;: [&#39;PCTRET&#39;],
+        &#39;add_cols&#39;: True,
+        &#39;normalize&#39;: True,
+        &#39;max&#39;: 1,
+        &#39;min&#39;: -1,
+        &#39;std&#39;: eps,
+    },
+    &#39;0_100&#39;: {
+        &#39;cols&#39;: [&#39;NATR&#39;, ],
+        &#39;add_cols&#39;: True,
+        &#39;normalize&#39;: True,
+        &#39;max&#39;: 100,
+        &#39;min&#39;: 0,
+        &#39;std&#39;: eps,
+    },
+    &#39;-100_0&#39;: {
+        &#39;cols&#39;: [&#39;WILLR&#39;],
+        &#39;add_cols&#39;: True,
+        &#39;normalize&#39;: True,
+        &#39;max&#39;: 0,
+        &#39;min&#39;: -100,
+        &#39;std&#39;: eps,
+    },
+    &#39;-100_100&#39;: {
+        &#39;cols&#39;: [&#39;ROC&#39;, &#39;PPO&#39;, &#39;PPOH&#39;, &#39;PPOS&#39;, &#39;TRIX&#39;, &#39;TSI&#39;, &#39;UO&#39;],
+        &#39;add_cols&#39;: True,
+        &#39;normalize&#39;: True,
+        &#39;max&#39;: 100,
+        &#39;min&#39;: -100,
+        &#39;std&#39;: eps,
+    },
+    &#39;-200_200&#39;: {
+        &#39;cols&#39;: [&#39;COPC&#39;],
+        &#39;add_cols&#39;: False,
+        &#39;normalize&#39;: True,
+        &#39;max&#39;: 200,
+        &#39;min&#39;: -200,
+        &#39;std&#39;: eps,
+    },
+    &#39;-100000_100000&#39;: {
+        &#39;cols&#39;: [&#39;KST&#39;],
+        &#39;add_cols&#39;: False,
+        &#39;normalize&#39;: True,
+        &#39;max&#39;: 100000,
+        &#39;min&#39;: -100000,
+        &#39;std&#39;: eps,
+    },
+    &#39;diff_prices&#39;: {
+        &#39;cols&#39;: [&#39;AO&#39;, &#39;APO&#39;, &#39;ATR&#39;, &#39;DPO&#39;, &#39;MACDH&#39;, &#39;MACDS&#39;, &#39;MOM&#39;, &#39;QS&#39;], # &#39;MACD&#39;
+        &#39;add_cols&#39;: False,
+        &#39;normalize&#39;: False,
+    },
+    &#39;prices&#39;: {
+        &#39;cols&#39;: [&#39;KAMA&#39;],
+        &#39;add_cols&#39;: True,
+        &#39;ref_col&#39;: &#39;close&#39;,
+        &#39;normalize&#39;: False,
+    },
+}
+
+# Transform from a frequency name (standard for pandas) to a description
+FREQUENCY_DESCRIPTION = {
+    &#39;s&#39;: &#39;sec&#39;,
+    &#39;m&#39;: &#39;min&#39;,
+    &#39;h&#39;: &#39;hour&#39;,
+    &#39;d&#39;: &#39;day&#39;,
+}
+
+
+def classifyColsByRanges(data, known_cols_dict=KNOWN_COLS):
+    &#34;&#34;&#34; Classify each column from data into a group from KNOWN_COLS &#34;&#34;&#34;
+
+    def _removeFromAllColumns(all_columns, columns):
+        for col in columns:
+            try:
+                i = all_columns.index(col)
+                del all_columns[i]
+            except ValueError:
+                print(f&#39;Column {col} not found in {all_columns}&#39;)
+
+    # Transform all abreviated columns in `know_cols` into the full name column names in data   
+    ranges_dict = known_cols_dict.copy()
+    all_known_columns = []
+    for key, values in ranges_dict.items():
+        clean_cols = values[&#39;cols&#39;]
+        range_cols = []
+        for clean_col in clean_cols:
+            columns = list(data.columns[data.columns.str.startswith(clean_col+&#39;_&#39;)])
+            all_known_columns += columns
+            range_cols += columns
+        ranges_dict[key][&#39;cols&#39;] = range_cols
+
+    all_columns = list(data.columns)
+
+    # Remove all the already known columns
+    _removeFromAllColumns(all_columns, all_known_columns)
+
+    # Look for columns which match requirements for each group
+    for key in ranges_dict:
+        columns = []
+        if ranges_dict[key][&#39;add_cols&#39;]:
+            # Get parameters of current range
+            if key == &#39;prices&#39;:
+                max_ = data[ranges_dict[key][&#39;ref_col&#39;]].max()
+                min_ = data[ranges_dict[key][&#39;ref_col&#39;]].min()
+                std_ = data[ranges_dict[key][&#39;ref_col&#39;]].std()
+                ranges_dict[key][&#39;max&#39;] = max_
+                ranges_dict[key][&#39;min&#39;] = min_
+                ranges_dict[key][&#39;std&#39;] = std_
+            else:
+                max_ = ranges_dict[key][&#39;max&#39;]
+                min_ = ranges_dict[key][&#39;min&#39;]
+                std_ = ranges_dict[key][&#39;std&#39;]
+
+            # Extract columns which match the specification
+            columns = list(data[all_columns].dtypes[(data.max() &lt;= max_ + std_) &amp; (data.min() &gt;= min_ - std_)].index)
+
+            # Remove from all_columns
+            _removeFromAllColumns(all_columns, columns)
+            
+            # Add sorted unique columns to the pertinent range
+            ranges_dict[key][&#39;cols&#39;] = sorted(list(set(columns + ranges_dict[key][&#39;cols&#39;])))
+
+    # Final group with the rest of columns which have not been classified in a group
+    ranges_dict[&#39;others&#39;] = {}
+    ranges_dict[&#39;others&#39;][&#39;cols&#39;] = sorted(all_columns)
+    ranges_dict[&#39;others&#39;][&#39;normalize&#39;] = False 
+
+    return ranges_dict
+
+
+def normalizeFeatures(data, ranges_dict):
+    &#34;&#34;&#34; Apply min-max normalization on all the features which have normalization range &#34;&#34;&#34;
+    
+    for _, values in ranges_dict.items():
+        if values[&#39;normalize&#39;]:
+            columns = values[&#39;cols&#39;]
+            max_ = values[&#39;max&#39;]
+            min_ = values[&#39;min&#39;]
+            data[columns] = (data[columns] - min_) / (max_ - min_)
+
+    return data
+
+
+def generateTAFeatures(data, exclude_ind=[], args=None, suffix=&#39;&#39;):
+    &#34;&#34;&#34; Generate all the Technical Analysis features excluding the specified ones &#34;&#34;&#34;
+
+    # Indicators not posible to use &#39;short_run&#39; and &#39;cross&#39;
+    not_ind = [&#39;long_run&#39;, &#39;short_run&#39;, &#39;cross&#39;]
+    not_ind.append(&#39;ichimoku&#39;) # Output has to be treaten different because is returning two DataFrames
+    not_ind.append(&#39;trend_return&#39;) # Required trend column
+
+    # Add exclude_ind
+    not_ind += exclude_ind
+
+    indicators = [ind for ind in data.ta.indicators(as_list=True) if ind not in not_ind]
+
+    if args is None:
+        basic_args = {&#39;append&#39;: True, &#39;ewm&#39;: True, &#39;adjust&#39;: True, &#39;suffix&#39;: suffix}
+        basic_args = dict(zip(indicators, [basic_args] * len(indicators)))
+
+        args = basic_args
+
+    # TODO: Implement short-term and long-term arguments for each indicator
+
+    n_args = len(args)
+    for i, (ind, arg) in enumerate(args.items()):
+        print(f&#39;{i} out of {n_args} features&#39;, end=&#39;\r&#39;)
+        data.ta(kind=ind, **arg)
+
+    return data
+
+
+def cleanNan(data):
+    &#34;&#34;&#34; Clean data from NaN, columns with all NaNs and rows with at least one NaN &#34;&#34;&#34;
+
+    # Drop columns which have all columns as NaN
+    remove_cols = data.dtypes[data.isnull().all()].index
+    if len(remove_cols) &gt; 0:
+        data = data.drop(remove_cols, axis=1)
+        print(f&#39;The following columns have been removed: {list(remove_cols)}&#39;)
+
+    # Drop rows which have at least one NaN
+    print(f&#39;Dropping {data.isnull().any(axis=1).sum()} rows because of NaN values&#39;)
+    data = data[data.notnull().all(axis=1)]
+
+    return data
+
+
+def main(prices_path, ranges_dict_path, save_path, onlyRead=True, cleanNans=True, exclude_ind=[], args=None, freq=&#39;min&#39;, freq_raw=&#39;min&#39;, sep=&#39;,&#39;, timestamp_col=None, timestamp_unit=&#39;s&#39;, start_date=None, end_date=None, columns_dict=None):
+    &#34;&#34;&#34; Preprocess on prices historical data filling up all entries, aggregating by frequency, treating NA and differenciating &#34;&#34;&#34;
+
+    if onlyRead and os.path.exists(ranges_dict_path) and os.path.exists(save_path):
+        ranges_dict_path = &#39;data\\ranges_dict.pickle&#39;
+
+        final_data = pd.read_csv(save_path, sep=&#39;\t&#39;, index_col=timestamp_col)
+        final_data = final_data.set_index(
+            pd.to_datetime(final_data.index)
+        )
+        with open(ranges_dict_path, &#39;rb&#39;) as f:
+            ranges_dict = pickle.load(f)
+
+    else:
+
+        print(&#39;Loading data...&#39;)
+        parse_dates = timestamp_col is not None
+
+        raw_df = pd.read_csv(
+            prices_path,
+            sep=sep,
+            index_col=timestamp_col,
+            parse_dates=parse_dates
+        )
+
+        # Transform Timestamp, which is expressed in seconds, to index
+        raw_df = raw_df.set_index(
+            pd.to_datetime(raw_df.index, unit=timestamp_unit)
+        )
+
+        # Filter to tret only between start_date and end_date
+        if start_date is None:
+            start_date = raw_df.index.min()
+        if end_date is None:
+            end_date = raw_df.index.max()
+        raw_df = raw_df[
+            (raw_df.index &gt;= start_date)
+            &amp; (raw_df.index &lt;= end_date)
+        ]
+
+        # Generate columns_dict to rename columns in case it does not exist
+        required_columns = [&#39;open&#39;, &#39;high&#39;, &#39;low&#39;, &#39;close&#39;, &#39;volume&#39;]
+        if columns_dict is None:
+            columns_dict = {}
+            lower_cols = [col.lower() for col in list(raw_df.columns)]
+            for col in required_columns:
+                for i, lower_col in enumerate(lower_cols):
+                    if col in lower_col:
+                        orig_col = list(raw_df.columns)[i]
+                        columns_dict[orig_col] = col
+                        break
+
+        # Dictionary columns_dict must have the values of the required_columns
+        assert Counter(required_columns) == Counter(list(columns_dict.values())), f&#39;Dictionary columns_dict must have the following values: {required_columns}&#39;
+
+        # Rename the corresponding columns to &#39;open&#39;, &#39;high&#39;, &#39;low&#39;, &#39;close&#39; and &#39;volume&#39;
+        raw_df = raw_df.rename(columns=columns_dict)
+
+        print(&#34;Filling All Time data&#34;)
+        # Fill all the seconds between first and last second of data
+        df = fillAllTime(
+            raw_df,
+            freq=freq_raw
+        )
+
+        print(&#34;Filling NA data&#34;)
+        # As null data is due to no transaction on that minute (or in minimal cases shutdown of API)
+        # Means that the prices is the same as in the previous minute
+        df = df.fillna(method=&#39;ffill&#39;)
+
+        if type(freq) is str:
+            freq = [freq]
+        
+        all_data = []
+        for frequency in freq:
+            if freq_raw != frequency:
+                print(f&#34;Aggregating from {freq_raw} to {frequency} level&#34;)
+                # Aggregate by frequency taking into account columns: open, high, low, close, volume
+                data = df.resample(frequency).agg(
+                    {
+                        &#39;open&#39;: lambda x: x.iloc[0],
+                        &#39;high&#39;: &#39;max&#39;,
+                        &#39;low&#39;: &#39;min&#39;,
+                        &#39;close&#39;: lambda x: x.iloc[-1],
+                        &#39;volume&#39;: &#39;sum&#39;
+                    }
+                )
+            else:
+                data = df
+            # Only required columns are used
+            data = data[required_columns]
+            all_data.append((data, frequency))
+
+        print(&#39;Generating TA features...&#39;)
+        for i, (data, frequency) in enumerate(all_data):
+
+            frequency_descr = FREQUENCY_DESCRIPTION[frequency]
+            if args is not None:
+                for ind in args:
+                    args[ind][&#39;suffix&#39;] = frequency_descr
+            
+            ta_data = generateTAFeatures(data, exclude_ind, args, suffix=frequency_descr)
+
+            if i == 0:
+                final_data = ta_data
+            else:
+                final_data = pd.merge_asof(final_data, ta_data, left_index=True, right_index=True, suffixes=(&#39;&#39;,&#39;_&#39;))
+
+                # Remove original columns (open, low, high, close, volume) from the right side
+                final_data = final_data[final_data.columns[~final_data.columns.str.endswith(&#39;_&#39;)]]
+
+        ranges_dict = classifyColsByRanges(final_data)
+        final_data = normalizeFeatures(final_data, ranges_dict)
+        final_data = cleanNan(final_data)
+        final_data.to_csv(save_path, sep=&#39;\t&#39;, index_label=&#39;Timestamp&#39;)
+
+        with open(ranges_dict_path, &#39;wb&#39;) as f:
+            pickle.dump(ranges_dict, f)
+
+    return final_data, ranges_dict</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="sentiment_trader.features.price_features.classifyColsByRanges"><code class="name flex">
+<span>def <span class="ident">classifyColsByRanges</span></span>(<span>data, known_cols_dict={'0_1': {'cols': [], 'add_cols': True, 'normalize': True, 'max': 1, 'min': 0, 'std': 0.0001}, '-1_1': {'cols': ['PCTRET'], 'add_cols': True, 'normalize': True, 'max': 1, 'min': -1, 'std': 0.0001}, '0_100': {'cols': ['NATR'], 'add_cols': True, 'normalize': True, 'max': 100, 'min': 0, 'std': 0.0001}, '-100_0': {'cols': ['WILLR'], 'add_cols': True, 'normalize': True, 'max': 0, 'min': -100, 'std': 0.0001}, '-100_100': {'cols': ['ROC', 'PPO', 'PPOH', 'PPOS', 'TRIX', 'TSI', 'UO'], 'add_cols': True, 'normalize': True, 'max': 100, 'min': -100, 'std': 0.0001}, '-200_200': {'cols': ['COPC'], 'add_cols': False, 'normalize': True, 'max': 200, 'min': -200, 'std': 0.0001}, '-100000_100000': {'cols': ['KST'], 'add_cols': False, 'normalize': True, 'max': 100000, 'min': -100000, 'std': 0.0001}, 'diff_prices': {'cols': ['AO', 'APO', 'ATR', 'DPO', 'MACDH', 'MACDS', 'MOM', 'QS'], 'add_cols': False, 'normalize': False}, 'prices': {'cols': ['KAMA'], 'add_cols': True, 'ref_col': 'close', 'normalize': False}})</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Classify each column from data into a group from KNOWN_COLS</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1d683d529224035ed66b4b658a1f49bab4246382/features\price_features.py#L96-L155" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">def classifyColsByRanges(data, known_cols_dict=KNOWN_COLS):
+    &#34;&#34;&#34; Classify each column from data into a group from KNOWN_COLS &#34;&#34;&#34;
+
+    def _removeFromAllColumns(all_columns, columns):
+        for col in columns:
+            try:
+                i = all_columns.index(col)
+                del all_columns[i]
+            except ValueError:
+                print(f&#39;Column {col} not found in {all_columns}&#39;)
+
+    # Transform all abreviated columns in `know_cols` into the full name column names in data   
+    ranges_dict = known_cols_dict.copy()
+    all_known_columns = []
+    for key, values in ranges_dict.items():
+        clean_cols = values[&#39;cols&#39;]
+        range_cols = []
+        for clean_col in clean_cols:
+            columns = list(data.columns[data.columns.str.startswith(clean_col+&#39;_&#39;)])
+            all_known_columns += columns
+            range_cols += columns
+        ranges_dict[key][&#39;cols&#39;] = range_cols
+
+    all_columns = list(data.columns)
+
+    # Remove all the already known columns
+    _removeFromAllColumns(all_columns, all_known_columns)
+
+    # Look for columns which match requirements for each group
+    for key in ranges_dict:
+        columns = []
+        if ranges_dict[key][&#39;add_cols&#39;]:
+            # Get parameters of current range
+            if key == &#39;prices&#39;:
+                max_ = data[ranges_dict[key][&#39;ref_col&#39;]].max()
+                min_ = data[ranges_dict[key][&#39;ref_col&#39;]].min()
+                std_ = data[ranges_dict[key][&#39;ref_col&#39;]].std()
+                ranges_dict[key][&#39;max&#39;] = max_
+                ranges_dict[key][&#39;min&#39;] = min_
+                ranges_dict[key][&#39;std&#39;] = std_
+            else:
+                max_ = ranges_dict[key][&#39;max&#39;]
+                min_ = ranges_dict[key][&#39;min&#39;]
+                std_ = ranges_dict[key][&#39;std&#39;]
+
+            # Extract columns which match the specification
+            columns = list(data[all_columns].dtypes[(data.max() &lt;= max_ + std_) &amp; (data.min() &gt;= min_ - std_)].index)
+
+            # Remove from all_columns
+            _removeFromAllColumns(all_columns, columns)
+            
+            # Add sorted unique columns to the pertinent range
+            ranges_dict[key][&#39;cols&#39;] = sorted(list(set(columns + ranges_dict[key][&#39;cols&#39;])))
+
+    # Final group with the rest of columns which have not been classified in a group
+    ranges_dict[&#39;others&#39;] = {}
+    ranges_dict[&#39;others&#39;][&#39;cols&#39;] = sorted(all_columns)
+    ranges_dict[&#39;others&#39;][&#39;normalize&#39;] = False 
+
+    return ranges_dict</code></pre>
+</details>
+</dd>
+<dt id="sentiment_trader.features.price_features.cleanNan"><code class="name flex">
+<span>def <span class="ident">cleanNan</span></span>(<span>data)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Clean data from NaN, columns with all NaNs and rows with at least one NaN</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1d683d529224035ed66b4b658a1f49bab4246382/features\price_features.py#L200-L213" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">def cleanNan(data):
+    &#34;&#34;&#34; Clean data from NaN, columns with all NaNs and rows with at least one NaN &#34;&#34;&#34;
+
+    # Drop columns which have all columns as NaN
+    remove_cols = data.dtypes[data.isnull().all()].index
+    if len(remove_cols) &gt; 0:
+        data = data.drop(remove_cols, axis=1)
+        print(f&#39;The following columns have been removed: {list(remove_cols)}&#39;)
+
+    # Drop rows which have at least one NaN
+    print(f&#39;Dropping {data.isnull().any(axis=1).sum()} rows because of NaN values&#39;)
+    data = data[data.notnull().all(axis=1)]
+
+    return data</code></pre>
+</details>
+</dd>
+<dt id="sentiment_trader.features.price_features.generateTAFeatures"><code class="name flex">
+<span>def <span class="ident">generateTAFeatures</span></span>(<span>data, exclude_ind=[], args=None, suffix='')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generate all the Technical Analysis features excluding the specified ones</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1d683d529224035ed66b4b658a1f49bab4246382/features\price_features.py#L171-L197" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">def generateTAFeatures(data, exclude_ind=[], args=None, suffix=&#39;&#39;):
+    &#34;&#34;&#34; Generate all the Technical Analysis features excluding the specified ones &#34;&#34;&#34;
+
+    # Indicators not posible to use &#39;short_run&#39; and &#39;cross&#39;
+    not_ind = [&#39;long_run&#39;, &#39;short_run&#39;, &#39;cross&#39;]
+    not_ind.append(&#39;ichimoku&#39;) # Output has to be treaten different because is returning two DataFrames
+    not_ind.append(&#39;trend_return&#39;) # Required trend column
+
+    # Add exclude_ind
+    not_ind += exclude_ind
+
+    indicators = [ind for ind in data.ta.indicators(as_list=True) if ind not in not_ind]
+
+    if args is None:
+        basic_args = {&#39;append&#39;: True, &#39;ewm&#39;: True, &#39;adjust&#39;: True, &#39;suffix&#39;: suffix}
+        basic_args = dict(zip(indicators, [basic_args] * len(indicators)))
+
+        args = basic_args
+
+    # TODO: Implement short-term and long-term arguments for each indicator
+
+    n_args = len(args)
+    for i, (ind, arg) in enumerate(args.items()):
+        print(f&#39;{i} out of {n_args} features&#39;, end=&#39;\r&#39;)
+        data.ta(kind=ind, **arg)
+
+    return data</code></pre>
+</details>
+</dd>
+<dt id="sentiment_trader.features.price_features.main"><code class="name flex">
+<span>def <span class="ident">main</span></span>(<span>prices_path, ranges_dict_path, save_path, onlyRead=True, cleanNans=True, exclude_ind=[], args=None, freq='min', freq_raw='min', sep=',', timestamp_col=None, timestamp_unit='s', start_date=None, end_date=None, columns_dict=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Preprocess on prices historical data filling up all entries, aggregating by frequency, treating NA and differenciating</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1d683d529224035ed66b4b658a1f49bab4246382/features\price_features.py#L216-L335" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">def main(prices_path, ranges_dict_path, save_path, onlyRead=True, cleanNans=True, exclude_ind=[], args=None, freq=&#39;min&#39;, freq_raw=&#39;min&#39;, sep=&#39;,&#39;, timestamp_col=None, timestamp_unit=&#39;s&#39;, start_date=None, end_date=None, columns_dict=None):
+    &#34;&#34;&#34; Preprocess on prices historical data filling up all entries, aggregating by frequency, treating NA and differenciating &#34;&#34;&#34;
+
+    if onlyRead and os.path.exists(ranges_dict_path) and os.path.exists(save_path):
+        ranges_dict_path = &#39;data\\ranges_dict.pickle&#39;
+
+        final_data = pd.read_csv(save_path, sep=&#39;\t&#39;, index_col=timestamp_col)
+        final_data = final_data.set_index(
+            pd.to_datetime(final_data.index)
+        )
+        with open(ranges_dict_path, &#39;rb&#39;) as f:
+            ranges_dict = pickle.load(f)
+
+    else:
+
+        print(&#39;Loading data...&#39;)
+        parse_dates = timestamp_col is not None
+
+        raw_df = pd.read_csv(
+            prices_path,
+            sep=sep,
+            index_col=timestamp_col,
+            parse_dates=parse_dates
+        )
+
+        # Transform Timestamp, which is expressed in seconds, to index
+        raw_df = raw_df.set_index(
+            pd.to_datetime(raw_df.index, unit=timestamp_unit)
+        )
+
+        # Filter to tret only between start_date and end_date
+        if start_date is None:
+            start_date = raw_df.index.min()
+        if end_date is None:
+            end_date = raw_df.index.max()
+        raw_df = raw_df[
+            (raw_df.index &gt;= start_date)
+            &amp; (raw_df.index &lt;= end_date)
+        ]
+
+        # Generate columns_dict to rename columns in case it does not exist
+        required_columns = [&#39;open&#39;, &#39;high&#39;, &#39;low&#39;, &#39;close&#39;, &#39;volume&#39;]
+        if columns_dict is None:
+            columns_dict = {}
+            lower_cols = [col.lower() for col in list(raw_df.columns)]
+            for col in required_columns:
+                for i, lower_col in enumerate(lower_cols):
+                    if col in lower_col:
+                        orig_col = list(raw_df.columns)[i]
+                        columns_dict[orig_col] = col
+                        break
+
+        # Dictionary columns_dict must have the values of the required_columns
+        assert Counter(required_columns) == Counter(list(columns_dict.values())), f&#39;Dictionary columns_dict must have the following values: {required_columns}&#39;
+
+        # Rename the corresponding columns to &#39;open&#39;, &#39;high&#39;, &#39;low&#39;, &#39;close&#39; and &#39;volume&#39;
+        raw_df = raw_df.rename(columns=columns_dict)
+
+        print(&#34;Filling All Time data&#34;)
+        # Fill all the seconds between first and last second of data
+        df = fillAllTime(
+            raw_df,
+            freq=freq_raw
+        )
+
+        print(&#34;Filling NA data&#34;)
+        # As null data is due to no transaction on that minute (or in minimal cases shutdown of API)
+        # Means that the prices is the same as in the previous minute
+        df = df.fillna(method=&#39;ffill&#39;)
+
+        if type(freq) is str:
+            freq = [freq]
+        
+        all_data = []
+        for frequency in freq:
+            if freq_raw != frequency:
+                print(f&#34;Aggregating from {freq_raw} to {frequency} level&#34;)
+                # Aggregate by frequency taking into account columns: open, high, low, close, volume
+                data = df.resample(frequency).agg(
+                    {
+                        &#39;open&#39;: lambda x: x.iloc[0],
+                        &#39;high&#39;: &#39;max&#39;,
+                        &#39;low&#39;: &#39;min&#39;,
+                        &#39;close&#39;: lambda x: x.iloc[-1],
+                        &#39;volume&#39;: &#39;sum&#39;
+                    }
+                )
+            else:
+                data = df
+            # Only required columns are used
+            data = data[required_columns]
+            all_data.append((data, frequency))
+
+        print(&#39;Generating TA features...&#39;)
+        for i, (data, frequency) in enumerate(all_data):
+
+            frequency_descr = FREQUENCY_DESCRIPTION[frequency]
+            if args is not None:
+                for ind in args:
+                    args[ind][&#39;suffix&#39;] = frequency_descr
+            
+            ta_data = generateTAFeatures(data, exclude_ind, args, suffix=frequency_descr)
+
+            if i == 0:
+                final_data = ta_data
+            else:
+                final_data = pd.merge_asof(final_data, ta_data, left_index=True, right_index=True, suffixes=(&#39;&#39;,&#39;_&#39;))
+
+                # Remove original columns (open, low, high, close, volume) from the right side
+                final_data = final_data[final_data.columns[~final_data.columns.str.endswith(&#39;_&#39;)]]
+
+        ranges_dict = classifyColsByRanges(final_data)
+        final_data = normalizeFeatures(final_data, ranges_dict)
+        final_data = cleanNan(final_data)
+        final_data.to_csv(save_path, sep=&#39;\t&#39;, index_label=&#39;Timestamp&#39;)
+
+        with open(ranges_dict_path, &#39;wb&#39;) as f:
+            pickle.dump(ranges_dict, f)
+
+    return final_data, ranges_dict</code></pre>
+</details>
+</dd>
+<dt id="sentiment_trader.features.price_features.normalizeFeatures"><code class="name flex">
+<span>def <span class="ident">normalizeFeatures</span></span>(<span>data, ranges_dict)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Apply min-max normalization on all the features which have normalization range</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1d683d529224035ed66b4b658a1f49bab4246382/features\price_features.py#L158-L168" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">def normalizeFeatures(data, ranges_dict):
+    &#34;&#34;&#34; Apply min-max normalization on all the features which have normalization range &#34;&#34;&#34;
+    
+    for _, values in ranges_dict.items():
+        if values[&#39;normalize&#39;]:
+            columns = values[&#39;cols&#39;]
+            max_ = values[&#39;max&#39;]
+            min_ = values[&#39;min&#39;]
+            data[columns] = (data[columns] - min_) / (max_ - min_)
+
+    return data</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<div class="gcse-search" style="height: 70px"
+data-as_oq="inurl:github.com/lluissalord/sentiment_trader site:sentiment_trader.github.io site:sentiment_trader.website"
+data-gaCategoryParameter="sentiment_trader.features.price_features">
+</div>
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="sentiment_trader.features" href="index.html">sentiment_trader.features</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="sentiment_trader.features.price_features.classifyColsByRanges" href="#sentiment_trader.features.price_features.classifyColsByRanges">classifyColsByRanges</a></code></li>
+<li><code><a title="sentiment_trader.features.price_features.cleanNan" href="#sentiment_trader.features.price_features.cleanNan">cleanNan</a></code></li>
+<li><code><a title="sentiment_trader.features.price_features.generateTAFeatures" href="#sentiment_trader.features.price_features.generateTAFeatures">generateTAFeatures</a></code></li>
+<li><code><a title="sentiment_trader.features.price_features.main" href="#sentiment_trader.features.price_features.main">main</a></code></li>
+<li><code><a title="sentiment_trader.features.price_features.normalizeFeatures" href="#sentiment_trader.features.price_features.normalizeFeatures">normalizeFeatures</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.4</a>.</p>
+</footer>
+</body>
+</html>
