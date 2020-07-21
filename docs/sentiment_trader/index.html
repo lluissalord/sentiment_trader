@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.4" />
 <title>sentiment_trader API documentation</title>
-<meta name="description" content="Trader which take into account twitter sentiment on specific topic and Technical Analysis to decide to go Long or Short." />
+<meta name="description" content="Trader which take into account twitter sentiment on specific topic and Technical Analysis to decide to go Long or Short …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/atom-one-dark.min.css" crossorigin>
@@ -32,13 +32,33 @@ body.gsc-overflow-hidden #sidebar {overflow: visible;}
 <h1 class="title">Package <code>sentiment_trader</code></h1>
 </header>
 <section id="section-intro">
+<p>Trader which take into account twitter sentiment on specific topic and Technical Analysis to decide to go Long or Short. </p>
+<h1 id="sentiment-trader">Sentiment trader</h1>
 <p>Trader which take into account twitter sentiment on specific topic and Technical Analysis to decide to go Long or Short.</p>
+<h2 id="package-overview">Package Overview</h2>
+<p>Currently this package has three main pilars: (1) Feature engineering on tweet sentiments and on prices using Technical Analysis; (2) Reinforcement learning environment for trading and (3) Jupyter Notebook which join all this parts and train an RL DNN model.</p>
+<p>API Documentation <a href="https://lluissalord.github.io/sentiment_trader/index.html">here</a></p>
+<h2 id="installation">Installation</h2>
+<p>In order to install the required packages, please create an Conda environment from <code>environment.yml</code> using the following command:</p>
+<pre><code>conda env create -n &lt;ENV NAME&gt; -f environment.yml
+</code></pre>
+<p>Besides, to configure the Tweepy streaming, you will need to add some tokens on <code>settings.py.default</code>. There are plenty of guides on Internet on how to get these Tweeter API tokens (<a href="https://elfsight.com/blog/2020/03/how-to-get-twitter-api-key/">here</a> you can find an example). Then add them on <code>settings.py.default</code> and once done, please rename the file by <code>settings.py</code>.</p>
+<h2 id="data-sources">Data sources</h2>
+<p>In order to run Jupyter Notebook presented here, some CSV files are required. These have been extracted from Kaggle and they have to be allocated on <code>data/source/</code> folder. The CSV files used are:</p>
+<ul>
+<li>Tweets about Bitcoin: <a href="https://www.kaggle.com/alaix14/bitcoin-tweets-20160101-to-20190329">https://www.kaggle.com/alaix14/bitcoin-tweets-20160101-to-20190329</a></li>
+<li>Bitcoin prices: <a href="https://www.kaggle.com/mczielinski/bitcoin-historical-data#bitstampUSD_1-min_data_2012-01-01_to_2019-08-12.csv">https://www.kaggle.com/mczielinski/bitcoin-historical-data#bitstampUSD_1-min_data_2012-01-01_to_2019-08-12.csv</a></li>
+</ul>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/sentiment_trader/blob/1d683d529224035ed66b4b658a1f49bab4246382/__init__.py#L0-L3" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/40038edcd3649376fe95f8f8499de44446d2491c/__init__.py#L0-L7" class="git-link">Browse git</a>
 </summary>
-<pre><code class="python">&#34;&#34;&#34; Trader which take into account twitter sentiment on specific topic and Technical Analysis to decide to go Long or Short. &#34;&#34;&#34;
+<pre><code class="python">&#34;&#34;&#34; Trader which take into account twitter sentiment on specific topic and Technical Analysis to decide to go Long or Short. 
+
+.. include:: README.md
+
+&#34;&#34;&#34;
 
 __pdoc__ = {}
 __pdoc__[&#39;settings&#39;] = False</code></pre>
@@ -75,7 +95,14 @@ data-gaCategoryParameter="sentiment_trader">
 </div>
 <h1>Index</h1>
 <div class="toc">
-<ul></ul>
+<ul>
+<li><a href="#sentiment-trader">Sentiment trader</a><ul>
+<li><a href="#package-overview">Package Overview</a></li>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#data-sources">Data sources</a></li>
+</ul>
+</li>
+</ul>
 </div>
 <ul id="index">
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>

@@ -6,6 +6,8 @@ Trader which take into account twitter sentiment on specific topic and Technical
 
 Currently this package has three main pilars: (1) Feature engineering on tweet sentiments and on prices using Technical Analysis; (2) Reinforcement learning environment for trading and (3) Jupyter Notebook which join all this parts and train an RL DNN model.
 
+API Documentation [here](https://lluissalord.github.io/sentiment_trader/index.html)
+
 ## Installation
 
 In order to install the required packages, please create an Conda environment from `environment.yml` using the following command:
