@@ -12,9 +12,11 @@ PRICE_REWARD = 2
 # TODO: Normalize somehow the reward to be more standard between runs, independent on the data is processing
 # TODO: Plot training info during training to be able to track it
 class RLStocksEnv(StocksEnv):
+    """ Stock environment class based on Gym_anytrading environment """
 
-    def __init__(self, df, window_size, frame_bound, steps_per_episode, is_training, position_as_observation=True, constant_step=False, min_steps_per_episode=2, reward_type=REVENUE_REWARD, max_final_reward=100, max_step_reward=1, price_column='close', feature_columns=None, seed=None):
+    def __init__(self, df, window_size, frame_bound, steps_per_episode, is_training, position_as_observation=True, constant_step=False, min_steps_per_episode=2, reward_type=REVENUE_REWARD, max_final_reward=100, max_step_reward=1, price_column='close', feature_columns=None, trade_fee_bid_percent=0, trade_fee_ask_percent=0, seed=None):
 
+        # Initialize members of the class with default values
         self.price_column = price_column
         
         if feature_columns is None:
@@ -33,8 +35,8 @@ class RLStocksEnv(StocksEnv):
         self.min_steps_per_episode = min_steps_per_episode
         self.is_training = is_training
 
-        self.trade_fee_bid_percent = 0.0 # 0.01  # unit
-        self.trade_fee_ask_percent = 0.0 # 0.005  # unit
+        self.trade_fee_bid_percent = trade_fee_bid_percent # 0.01  # unit
+        self.trade_fee_ask_percent = trade_fee_ask_percent # 0.005  # unit
 
         self.max_possible_profit_df = self.max_possible_profit()
 
@@ -57,9 +59,12 @@ class RLStocksEnv(StocksEnv):
         return prices, signal_features
 
     def reset(self, start_tick=None):
+        """ Reset environment """
+        # For non-constant step, set a random steps_per_episode
         if not self.constant_step:
             self.steps_per_episode = self.np_random.randint(self.max_steps_per_episode - self.min_steps_per_episode) + self.min_steps_per_episode
 
+        # In case of being training, on each reset/episode, the start tick can be provided, otherwise it is set randomly
         if self.is_training:
             if start_tick is None:
                 self._start_tick = min(
@@ -73,11 +78,14 @@ class RLStocksEnv(StocksEnv):
                 self.frame_bound[1] - 1
             )
             
+            # Calculate maximum possible profit dataframe on each reset/episode, depending on start and steps per episode defined
             self.max_possible_profit_df = self.max_possible_profit()
 
         return super().reset()
 
     def calculate_revenue_ratio(self):
+        """ Calculate revenue ratio based on current revenue (total profit - 1) and max_possible_revenue at current step """
+
         # TODO: Check if should be this tick or the previous one
         max_possible_revenue = self.max_possible_profit_df.loc[self._current_tick, 'max_profit'] - 1
         revenue = self._total_profit - 1
@@ -93,8 +101,13 @@ class RLStocksEnv(StocksEnv):
         return revenue_ratio
 
     def step(self, action):
+        """ Perform step with provided action """
+
+        # Perform step based on StocksEnv parent class
+        # Reward from parent class is calculated based on price difference (between Short and Long)
         observation, reward, done, info = super().step(action)
 
+        # Reward can be calculated based on revenue with final reward or step reward
         if self.reward_type == REVENUE_REWARD:
             revenue_ratio = self.calculate_revenue_ratio()
 
@@ -105,14 +118,18 @@ class RLStocksEnv(StocksEnv):
 
                 # Normalize according to the number of steps of this episode
                 reward /= (self._end_tick - self._start_tick)
+
+        # Reward can be based on price (as parent class), but normalized by the Short price
         elif self.reward_type == PRICE_REWARD:
             reward /= self.prices[self._last_trade_tick]
             
         return observation, reward, done, info
 
     def _get_observation(self):
+        """ Return observation of the current tick """
         features = self.signal_features[(self._current_tick-self.window_size):self._current_tick]
         
+        # Add the current position (Short or Long) to the observation data
         if self.position_as_observation:
             positions = np.expand_dims(
                 np.array(
@@ -134,14 +151,20 @@ class RLStocksEnv(StocksEnv):
             return features
 
     def max_possible_profit(self):
+        """ Calculate maximum possible profit given the current parameters (prices, start tick and end tick) """
+
+        # Initialize variables
         current_tick = self._start_tick
         last_trade_tick = current_tick - 1
         profit = 1.
 
+        # Initialize DataFrame
         max_possible_profit_df = pd.DataFrame(index=range(self._start_tick, self._end_tick + 1), columns=['max_profit'])
         max_possible_profit_df.loc[current_tick, 'max_profit'] = profit
 
         while current_tick <= self._end_tick:
+            # Increase ticks till there is oportunity to go Long or Short (change of direction)
+            # In that case, simulate it sells/buy at the best moment
             if self.prices[current_tick] < self.prices[current_tick - 1]:
                 while (current_tick <= self._end_tick and
                        self.prices[current_tick] < self.prices[current_tick - 1]): 
@@ -150,6 +173,7 @@ class RLStocksEnv(StocksEnv):
                 while (current_tick <= self._end_tick and
                        self.prices[current_tick] >= self.prices[current_tick - 1]):
                     
+                    # Calculate profits when selling and set value on Dataframe
                     shares = (profit * (1 - self.trade_fee_ask_percent)) / self.prices[last_trade_tick]
                     temp_profit = (shares * (1 - self.trade_fee_bid_percent)) * self.prices[current_tick]
                     max_possible_profit_df.loc[current_tick, 'max_profit'] = temp_profit
@@ -158,6 +182,7 @@ class RLStocksEnv(StocksEnv):
                 profit = temp_profit
             last_trade_tick = current_tick - 1
 
+        # Fill NaN values with previous profit
         max_possible_profit_df = max_possible_profit_df.fillna(method='ffill')
 
         return max_possible_profit_df

@@ -36,7 +36,7 @@ body.gsc-overflow-hidden #sidebar {overflow: visible;}
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/sentiment_trader/blob/40038edcd3649376fe95f8f8499de44446d2491c/RL\utils.py#L0-L535" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/bfb075b418f89f6ede0e15aecbd7f03c6eb38721/RL\utils.py#L0-L535" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">&#34;&#34;&#34; Utils for RL agent &#34;&#34;&#34;
 
@@ -591,7 +591,7 @@ def train_eval(tf_agent, num_iterations, batch_size, tf_env, eval_tf_env, train_
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/sentiment_trader/blob/40038edcd3649376fe95f8f8499de44446d2491c/RL\utils.py#L232-L271" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/bfb075b418f89f6ede0e15aecbd7f03c6eb38721/RL\utils.py#L232-L271" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def evaluate(eval_metrics, eval_tf_env, eval_policy, num_eval_episodes, num_eval_seeds, global_step=None, eval_summary_writer=None, summary_prefix=&#39;Metrics&#39;, seed=12345):
     &#34;&#34;&#34; Evaluate policy on the evaluation environment for the specified episodes and metrics &#34;&#34;&#34;
@@ -643,7 +643,7 @@ def train_eval(tf_agent, num_iterations, batch_size, tf_env, eval_tf_env, train_
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/sentiment_trader/blob/40038edcd3649376fe95f8f8499de44446d2491c/RL\utils.py#L28-L114" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/bfb075b418f89f6ede0e15aecbd7f03c6eb38721/RL\utils.py#L28-L114" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def generateSplitEnvs(
     train_df,
@@ -742,7 +742,7 @@ def train_eval(tf_agent, num_iterations, batch_size, tf_env, eval_tf_env, train_
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/sentiment_trader/blob/40038edcd3649376fe95f8f8499de44446d2491c/RL\utils.py#L274-L536" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/bfb075b418f89f6ede0e15aecbd7f03c6eb38721/RL\utils.py#L274-L536" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def train_eval(tf_agent, num_iterations, batch_size, tf_env, eval_tf_env, train_metrics, step_metrics, eval_metrics, global_step, steps_per_episode, num_parallel_environments, collect_per_iteration, train_steps_per_iteration, train_dir, saved_model_dir, eval_summary_writer, num_eval_episodes, num_eval_seeds=1, eval_metrics_callback=None, train_sequence_length=1, initial_collect_steps=1000, log_interval=100, eval_interval=400, policy_checkpoint_interval=400, train_checkpoint_interval=1200, rb_checkpoint_interval=2000, train_model=True, use_tf_functions=True, eval_early_stopping=False, seed=12345):
     &#34;&#34;&#34; Train and evaluation function of a TF Agent given the properties provided &#34;&#34;&#34;
@@ -1044,7 +1044,7 @@ baseline.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/sentiment_trader/blob/40038edcd3649376fe95f8f8499de44446d2491c/RL\utils.py#L117-L229" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/bfb075b418f89f6ede0e15aecbd7f03c6eb38721/RL\utils.py#L117-L229" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class AgentEarlyStopping():
     def __init__(self,
@@ -1170,7 +1170,7 @@ baseline.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/sentiment_trader/blob/40038edcd3649376fe95f8f8499de44446d2491c/RL\utils.py#L219-L220" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/bfb075b418f89f6ede0e15aecbd7f03c6eb38721/RL\utils.py#L219-L220" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def add_checkpointer(self, checkpointer):
     self.checkpointers.append(checkpointer)</code></pre>
@@ -1184,7 +1184,7 @@ baseline.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/sentiment_trader/blob/40038edcd3649376fe95f8f8499de44446d2491c/RL\utils.py#L222-L229" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/bfb075b418f89f6ede0e15aecbd7f03c6eb38721/RL\utils.py#L222-L229" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def get_monitor_value(self, computed_metrics):
     computed_metrics = computed_metrics or {}
@@ -1204,7 +1204,7 @@ baseline.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/sentiment_trader/blob/40038edcd3649376fe95f8f8499de44446d2491c/RL\utils.py#L184-L194" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/bfb075b418f89f6ede0e15aecbd7f03c6eb38721/RL\utils.py#L184-L194" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def reset(self):
     # Allow instances to be re-used
