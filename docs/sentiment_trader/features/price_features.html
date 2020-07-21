@@ -36,7 +36,7 @@ body.gsc-overflow-hidden #sidebar {overflow: visible;}
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/sentiment_trader/blob/bfb075b418f89f6ede0e15aecbd7f03c6eb38721/features\price_features.py#L0-L334" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1cf060edabacd54109a50881cb61c3b8aa636579/features\price_features.py#L0-L334" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">&#34;&#34;&#34; Price feature engineering &#34;&#34;&#34;
 
@@ -390,7 +390,7 @@ def main(prices_path, ranges_dict_path, save_path, onlyRead=True, cleanNans=True
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/sentiment_trader/blob/bfb075b418f89f6ede0e15aecbd7f03c6eb38721/features\price_features.py#L96-L155" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1cf060edabacd54109a50881cb61c3b8aa636579/features\price_features.py#L96-L155" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def classifyColsByRanges(data, known_cols_dict=KNOWN_COLS):
     &#34;&#34;&#34; Classify each column from data into a group from KNOWN_COLS &#34;&#34;&#34;
@@ -462,7 +462,7 @@ def main(prices_path, ranges_dict_path, save_path, onlyRead=True, cleanNans=True
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/sentiment_trader/blob/bfb075b418f89f6ede0e15aecbd7f03c6eb38721/features\price_features.py#L200-L213" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1cf060edabacd54109a50881cb61c3b8aa636579/features\price_features.py#L200-L213" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def cleanNan(data):
     &#34;&#34;&#34; Clean data from NaN, columns with all NaNs and rows with at least one NaN &#34;&#34;&#34;
@@ -488,7 +488,7 @@ def main(prices_path, ranges_dict_path, save_path, onlyRead=True, cleanNans=True
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/sentiment_trader/blob/bfb075b418f89f6ede0e15aecbd7f03c6eb38721/features\price_features.py#L171-L197" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1cf060edabacd54109a50881cb61c3b8aa636579/features\price_features.py#L171-L197" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def generateTAFeatures(data, exclude_ind=[], args=None, suffix=&#39;&#39;):
     &#34;&#34;&#34; Generate all the Technical Analysis features excluding the specified ones &#34;&#34;&#34;
@@ -527,7 +527,7 @@ def main(prices_path, ranges_dict_path, save_path, onlyRead=True, cleanNans=True
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/sentiment_trader/blob/bfb075b418f89f6ede0e15aecbd7f03c6eb38721/features\price_features.py#L216-L335" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1cf060edabacd54109a50881cb61c3b8aa636579/features\price_features.py#L216-L335" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def main(prices_path, ranges_dict_path, save_path, onlyRead=True, cleanNans=True, exclude_ind=[], args=None, freq=&#39;min&#39;, freq_raw=&#39;min&#39;, sep=&#39;,&#39;, timestamp_col=None, timestamp_unit=&#39;s&#39;, start_date=None, end_date=None, columns_dict=None):
     &#34;&#34;&#34; Preprocess on prices historical data filling up all entries, aggregating by frequency, treating NA and differenciating &#34;&#34;&#34;
@@ -659,7 +659,7 @@ def main(prices_path, ranges_dict_path, save_path, onlyRead=True, cleanNans=True
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/sentiment_trader/blob/bfb075b418f89f6ede0e15aecbd7f03c6eb38721/features\price_features.py#L158-L168" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1cf060edabacd54109a50881cb61c3b8aa636579/features\price_features.py#L158-L168" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def normalizeFeatures(data, ranges_dict):
     &#34;&#34;&#34; Apply min-max normalization on all the features which have normalization range &#34;&#34;&#34;

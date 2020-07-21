@@ -36,7 +36,7 @@ body.gsc-overflow-hidden #sidebar {overflow: visible;}
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/sentiment_trader/blob/bfb075b418f89f6ede0e15aecbd7f03c6eb38721/RL\stock_env.py#L0-L187" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1cf060edabacd54109a50881cb61c3b8aa636579/RL\stock_env.py#L0-L184" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">&#34;&#34;&#34; Stock environment class based on Gym_anytrading environment &#34;&#34;&#34;
 
@@ -52,7 +52,6 @@ PRICE_REWARD = 2
 # TODO: Normalize somehow the reward to be more standard between runs, independent on the data is processing
 # TODO: Plot training info during training to be able to track it
 class RLStocksEnv(StocksEnv):
-    &#34;&#34;&#34; Stock environment class based on Gym_anytrading environment &#34;&#34;&#34;
 
     def __init__(self, df, window_size, frame_bound, steps_per_episode, is_training, position_as_observation=True, constant_step=False, min_steps_per_episode=2, reward_type=REVENUE_REWARD, max_final_reward=100, max_step_reward=1, price_column=&#39;close&#39;, feature_columns=None, trade_fee_bid_percent=0, trade_fee_ask_percent=0, seed=None):
 
@@ -99,7 +98,6 @@ class RLStocksEnv(StocksEnv):
         return prices, signal_features
 
     def reset(self, start_tick=None):
-        &#34;&#34;&#34; Reset environment &#34;&#34;&#34;
         # For non-constant step, set a random steps_per_episode
         if not self.constant_step:
             self.steps_per_episode = self.np_random.randint(self.max_steps_per_episode - self.min_steps_per_episode) + self.min_steps_per_episode
@@ -141,7 +139,6 @@ class RLStocksEnv(StocksEnv):
         return revenue_ratio
 
     def step(self, action):
-        &#34;&#34;&#34; Perform step with provided action &#34;&#34;&#34;
 
         # Perform step based on StocksEnv parent class
         # Reward from parent class is calculated based on price difference (between Short and Long)
@@ -242,14 +239,31 @@ class RLStocksEnv(StocksEnv):
 <span>(</span><span>df, window_size, frame_bound, steps_per_episode, is_training, position_as_observation=True, constant_step=False, min_steps_per_episode=2, reward_type=1, max_final_reward=100, max_step_reward=1, price_column='close', feature_columns=None, trade_fee_bid_percent=0, trade_fee_ask_percent=0, seed=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Stock environment class based on Gym_anytrading environment</p></div>
+<div class="desc"><p>The main OpenAI Gym class. It encapsulates an environment with
+arbitrary behind-the-scenes dynamics. An environment can be
+partially or fully observed.</p>
+<p>The main API methods that users of this class need to know are:</p>
+<pre><code>step
+reset
+render
+close
+seed
+</code></pre>
+<p>And set the following attributes:</p>
+<pre><code>action_space: The Space object corresponding to valid actions
+observation_space: The Space object corresponding to valid observations
+reward_range: A tuple corresponding to the min and max possible rewards
+</code></pre>
+<p>Note: a default reward range set to [-inf,+inf] already exists. Set it if you want a narrower range.</p>
+<p>The methods are accessed publicly as "step", "reset", etc.. The
+non-underscored versions are wrapper methods to which we may add
+functionality over time.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/sentiment_trader/blob/bfb075b418f89f6ede0e15aecbd7f03c6eb38721/RL\stock_env.py#L14-L188" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1cf060edabacd54109a50881cb61c3b8aa636579/RL\stock_env.py#L14-L185" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">class RLStocksEnv(StocksEnv):
-    &#34;&#34;&#34; Stock environment class based on Gym_anytrading environment &#34;&#34;&#34;
 
     def __init__(self, df, window_size, frame_bound, steps_per_episode, is_training, position_as_observation=True, constant_step=False, min_steps_per_episode=2, reward_type=REVENUE_REWARD, max_final_reward=100, max_step_reward=1, price_column=&#39;close&#39;, feature_columns=None, trade_fee_bid_percent=0, trade_fee_ask_percent=0, seed=None):
 
@@ -296,7 +310,6 @@ class RLStocksEnv(StocksEnv):
         return prices, signal_features
 
     def reset(self, start_tick=None):
-        &#34;&#34;&#34; Reset environment &#34;&#34;&#34;
         # For non-constant step, set a random steps_per_episode
         if not self.constant_step:
             self.steps_per_episode = self.np_random.randint(self.max_steps_per_episode - self.min_steps_per_episode) + self.min_steps_per_episode
@@ -338,7 +351,6 @@ class RLStocksEnv(StocksEnv):
         return revenue_ratio
 
     def step(self, action):
-        &#34;&#34;&#34; Perform step with provided action &#34;&#34;&#34;
 
         # Perform step based on StocksEnv parent class
         # Reward from parent class is calculated based on price difference (between Short and Long)
@@ -440,7 +452,7 @@ class RLStocksEnv(StocksEnv):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/sentiment_trader/blob/bfb075b418f89f6ede0e15aecbd7f03c6eb38721/RL\stock_env.py#L86-L101" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1cf060edabacd54109a50881cb61c3b8aa636579/RL\stock_env.py#L84-L99" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def calculate_revenue_ratio(self):
     &#34;&#34;&#34; Calculate revenue ratio based on current revenue (total profit - 1) and max_possible_revenue at current step &#34;&#34;&#34;
@@ -468,7 +480,7 @@ class RLStocksEnv(StocksEnv):
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/sentiment_trader/blob/bfb075b418f89f6ede0e15aecbd7f03c6eb38721/RL\stock_env.py#L153-L188" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1cf060edabacd54109a50881cb61c3b8aa636579/RL\stock_env.py#L150-L185" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def max_possible_profit(self):
     &#34;&#34;&#34; Calculate maximum possible profit given the current parameters (prices, start tick and end tick) &#34;&#34;&#34;
@@ -512,14 +524,15 @@ class RLStocksEnv(StocksEnv):
 <span>def <span class="ident">reset</span></span>(<span>self, start_tick=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Reset environment</p></div>
+<div class="desc"><p>Resets the state of the environment and returns an initial observation.</p>
+<h2 id="returns">Returns</h2>
+<p>observation (object): the initial observation.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/sentiment_trader/blob/bfb075b418f89f6ede0e15aecbd7f03c6eb38721/RL\stock_env.py#L61-L84" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1cf060edabacd54109a50881cb61c3b8aa636579/RL\stock_env.py#L60-L82" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def reset(self, start_tick=None):
-    &#34;&#34;&#34; Reset environment &#34;&#34;&#34;
     # For non-constant step, set a random steps_per_episode
     if not self.constant_step:
         self.steps_per_episode = self.np_random.randint(self.max_steps_per_episode - self.min_steps_per_episode) + self.min_steps_per_episode
@@ -548,14 +561,26 @@ class RLStocksEnv(StocksEnv):
 <span>def <span class="ident">step</span></span>(<span>self, action)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Perform step with provided action</p></div>
+<div class="desc"><p>Run one timestep of the environment's dynamics. When end of
+episode is reached, you are responsible for calling <code>reset()</code>
+to reset this environment's state.</p>
+<p>Accepts an action and returns a tuple (observation, reward, done, info).</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>action</code></strong> :&ensp;<code>object</code></dt>
+<dd>an action provided by the agent</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>observation (object): agent's observation of the current environment
+reward (float) : amount of reward returned after previous action
+done (bool): whether the episode has ended, in which case further step() calls will return undefined results
+info (dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/sentiment_trader/blob/bfb075b418f89f6ede0e15aecbd7f03c6eb38721/RL\stock_env.py#L103-L126" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/1cf060edabacd54109a50881cb61c3b8aa636579/RL\stock_env.py#L101-L123" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def step(self, action):
-    &#34;&#34;&#34; Perform step with provided action &#34;&#34;&#34;
 
     # Perform step based on StocksEnv parent class
     # Reward from parent class is calculated based on price difference (between Short and Long)
