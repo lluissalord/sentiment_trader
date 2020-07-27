@@ -1,5 +1,5 @@
 """ Tweet sentiment analysis feature engineering """
-
+#%%
 import pandas as pd
 import numpy as np
 import time
@@ -74,7 +74,94 @@ def weight_mean(x, df, weight_col, offset=0):
     return np.average(x, weights=weights)
 
 
-def tweetsPreprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS, aggregate_cols=['replies', 'likes', 'retweets'], start_date=None, end_date=None, nrows=None, chunksize=5e5, save_path='data/preprocess/twitter.csv', write_files=True, save_final_df=True):
+def date_filter(df, start_date=None, end_date=None, timestamp_col='timestamp'):
+    df[timestamp_col] = pd.to_datetime(df[timestamp_col], format='%Y-%m-%d %H:%M:%S+00')
+
+    print("Filtering rows")
+    # Filter to tret only valid data between start_date and end_date
+    min_time = df[timestamp_col].min()
+    max_time = df[timestamp_col].max()
+    print(f'Min timestamp {min_time}, Max timestamp {max_time}')
+
+    df = df[
+        (df[timestamp_col].notnull())
+        & (df['text'].notnull())
+        & ((start_date is None) | (df[timestamp_col] >= start_date))
+        & ((end_date is None) | (df[timestamp_col] <= end_date))
+    ]
+    
+    return df
+
+
+def calculate_sentiment(df, sentiment_cols):
+    # Check and store columns used in sentiment_cols
+    vader_cols = [col for col in sentiment_cols if col in VADER_COLUMNS]
+    use_vader = len(vader_cols) > 0
+
+    textBlob_cols = [col for col in sentiment_cols if col in TEXTBLOB_COLUMNS]
+    use_textBlob = len(textBlob_cols) > 0
+
+    # TODO: Add moving average on sentiment
+    # Process VADER sentiment only if required
+    if use_vader:
+        print("Adding VADER Sentiment")
+        df = addVaderSentiment(df, vader_cols)
+        sentiment_cols = list(set(sentiment_cols + vader_cols))
+
+    # Process TextBlob sentiment only if required
+    if use_textBlob:
+        print("Adding TextBlob Sentiment")
+        df = addTextBlobSentiment(df, textBlob_cols)
+        sentiment_cols = list(set(sentiment_cols + textBlob_cols))
+
+    return df, sentiment_cols, use_textBlob, use_vader
+
+
+def sentiment_featuring(df, aggregate_cols, sentiment_cols, use_textBlob, use_vader):
+    # TODO: Add parametrizable 'aggregate_func' instead of directly ['sum','mean']
+    # Define simple operation to do on 'aggregate_cols' when aggregating by freq
+    func_dict = dict(
+        zip(
+            aggregate_cols,
+            [['sum','mean'],] * len(aggregate_cols)
+        )
+    )
+
+    if use_vader or use_textBlob:
+        # Define weighted means to do on 'sentiment_cols' when aggregating by freq
+        weight_cols = aggregate_cols
+        # TODO: Add parametrizable 'agg_sentiment_func' instead of directly ['mean']
+        agg_sentiment_func = ['mean']
+        replace_dict = {}
+        for i, weight_col in enumerate(weight_cols):
+            agg_sentiment_func.append(
+                lambda x: weight_mean(x, df, weight_col=weight_col, offset=0)
+            )
+
+            replace_dict[f'<lambda_{i}>'] = f'{weight_col}_mean'
+
+        func_dict.update(
+            dict(
+                zip(
+                    sentiment_cols,
+                    [agg_sentiment_func,] * len(sentiment_cols)
+                )
+            )
+        )
+
+    print("Aggregating by timestamp")
+    agg_df = df.groupby(['timestamp']).agg(func_dict)
+
+    # As weighted means are defined by lambda functions, these have to be renamed
+    agg_df.columns = list(
+        agg_df.columns.to_frame()
+            .replace(replace_dict)
+            .agg('_'.join, axis=1)
+    )
+
+    return agg_df
+
+def tweetsPreprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS, aggregate_cols=['replies', 'likes', 'retweets'], start_date=None, end_date=None, timestamp_col='timestamp', nrows=None, chunksize=5e5, save_path='data/preprocess/twitter.csv', write_files=True, save_final_df=True):
     """Preprocess on tweet historical data which adds sentiment columns and aggregate them depending on different weight columns by frequency
     """
 
@@ -82,7 +169,7 @@ def tweetsPreprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTB
     raw_df_chunks = pd.read_csv(
         tweets_path,
         sep=';',
-        usecols=['timestamp', 'text'] + aggregate_cols,
+        usecols=[timestamp_col, 'text'] + aggregate_cols,
         nrows=nrows,
         chunksize=chunksize,
         engine='python',
@@ -92,48 +179,19 @@ def tweetsPreprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTB
     saved_files = []
     for i, raw_df in enumerate(raw_df_chunks):
         print(f"Processing chunk {i}...")
-        print("Transforming timestamp to datetime format")
-        raw_df['timestamp'] = pd.to_datetime(raw_df['timestamp'], format='%Y-%m-%d %H:%M:%S+00')
 
-        print("Filtering rows")
-        # Filter to tret only valid data between start_date and end_date
-        min_time = raw_df['timestamp'].min()
-        max_time = raw_df['timestamp'].max()
-        print(f'Min timestamp {min_time}, Max timestamp {max_time}')
-
-        raw_df = raw_df[
-            (raw_df['timestamp'].notnull())
-            & (raw_df['text'].notnull())
-            & ((start_date is None) | (raw_df['timestamp'] >= start_date))
-            & ((end_date is None) | (raw_df['timestamp'] <= end_date))
-        ]
+        # Filter DataFrame to only include data between start_date and end_date
+        raw_df = date_filter(raw_df, start_date=start_date, end_date=end_date, timestamp_col=timestamp_col)
 
         print(f"After filter there are {len(raw_df.index)} rows out of {chunksize:.0f}")
         if len(raw_df.index) == 0:
             continue
 
-        # Check and store columns used in sentiment_cols
-        vader_cols = [col for col in sentiment_cols if col in VADER_COLUMNS]
-        use_vader = len(vader_cols) > 0
-
-        textBlob_cols = [col for col in sentiment_cols if col in TEXTBLOB_COLUMNS]
-        use_textBlob = len(textBlob_cols) > 0
-
-        # TODO: Add moving average on sentiment
-        # Process VADER sentiment only if required
-        if use_vader:
-            print("Adding VADER Sentiment")
-            raw_df = addVaderSentiment(raw_df, vader_cols)
-            sentiment_cols = list(set(sentiment_cols + vader_cols))
-
-        # Process TextBlob sentiment only if required
-        if use_textBlob:
-            print("Adding TextBlob Sentiment")
-            raw_df = addTextBlobSentiment(raw_df, textBlob_cols)
-            sentiment_cols = list(set(sentiment_cols + textBlob_cols))
+        # Run sentiment on the dataset
+        raw_df, sentiment_cols, use_textBlob, use_vader = calculate_sentiment(raw_df, sentiment_cols)
 
         # Summarise all columns which are stored
-        columns = ['timestamp'] + aggregate_cols + sentiment_cols
+        columns = [timestamp_col] + aggregate_cols + sentiment_cols
 
         # Use write_files when data is too large to fit in-memory
         if write_files:
@@ -168,7 +226,7 @@ def tweetsPreprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTB
 
         # Read file with all the chunks together
         all_df = pd.read_csv(save_path, sep='\t', usecols=columns)
-        all_df['timestamp'] = pd.to_datetime(all_df['timestamp'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
+        all_df[timestamp_col] = pd.to_datetime(all_df[timestamp_col], format='%Y-%m-%d %H:%M:%S', errors='coerce')
 
         # Remove temporary files
         for f in saved_files:
@@ -180,48 +238,10 @@ def tweetsPreprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTB
 
     # Floor timestamp at freq level to make sure that aggregation process is done correctly
     print("Flooring timestamp")
-    all_df['timestamp'] = all_df['timestamp'].dt.floor(freq)
+    all_df[timestamp_col] = all_df[timestamp_col].dt.floor(freq)
 
-    # TODO: Add parametrizable 'aggregate_func' instead of directly ['sum','mean']
-    # Define simple operation to do on 'aggregate_cols' when aggregating by freq
-    func_dict = dict(
-        zip(
-            aggregate_cols,
-            [['sum','mean'],] * len(aggregate_cols)
-        )
-    )
-
-    if use_vader or use_textBlob:
-        # Define weighted means to do on 'sentiment_cols' when aggregating by freq
-        weight_cols = aggregate_cols
-        # TODO: Add parametrizable 'agg_sentiment_func' instead of directly ['mean']
-        agg_sentiment_func = ['mean']
-        replace_dict = {}
-        for i, weight_col in enumerate(weight_cols):
-            agg_sentiment_func.append(
-                lambda x: weight_mean(x, all_df, weight_col=weight_col, offset=0)
-            )
-
-            replace_dict[f'<lambda_{i}>'] = f'{weight_col}_mean'
-
-        func_dict.update(
-            dict(
-                zip(
-                    sentiment_cols,
-                    [agg_sentiment_func,] * len(sentiment_cols)
-                )
-            )
-        )
-
-    print("Aggregating by timestamp")
-    agg_df = all_df.groupby(['timestamp']).agg(func_dict)
-
-    # As weighted means are defined by lambda functions, these have to be renamed
-    agg_df.columns = list(
-        agg_df.columns.to_frame()
-            .replace(replace_dict)
-            .agg('_'.join, axis=1)
-    )
+    # Process sentiment to aggregate DataFrame at timestamp (freq) level
+    agg_df = sentiment_featuring(all_df, aggregate_cols, sentiment_cols, use_textBlob, use_vader)
 
     print("Filling All Time data")
     # Fill all the seconds between first and last second of data
@@ -239,19 +259,19 @@ def tweetsPreprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTB
     if save_final_df:
         partial_file = os.path.splitext(save_path)
         save_final_path = f'{partial_file[0]}_{start_date}_-_{end_date}{partial_file[1]}'
-        df.to_csv(save_final_path, sep='\t', index_label='timestamp')
+        df.to_csv(save_final_path, sep='\t', index_label=timestamp_col)
 
     return df
 
 
 if __name__ == "__main__":
     # Scrapped from twitters from 2016-01-01 to 2019-03-29, Collecting Tweets containing Bitcoin or BTC
-    tweets_path = 'data/sources/tweets_historical.csv'
+    tweets_path = '../data/sources/tweets_historical.csv'
 
     start_date='2019-01-01'
     end_date='2019-03-28'
 
-    freq = 'min'
+    freq = 'h'
 
     # TODO: Save tweets sentiment independent of prices and one file per date range and frequency
 
@@ -264,8 +284,11 @@ if __name__ == "__main__":
         aggregate_cols=['replies', 'likes', 'retweets'],
         start_date=start_date,
         end_date=end_date,
-        nrows=None,
-        chunksize=5e5,
-        save_path='data/preprocess/twitter.csv',
+        nrows=80000,
+        chunksize=5e4,
+        save_path='../data/preprocess/twitter_test.csv',
         write_files=False
     )
+
+
+# %%
