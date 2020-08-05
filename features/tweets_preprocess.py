@@ -1,5 +1,5 @@
 """ Tweet sentiment analysis feature engineering """
-#%%
+
 import pandas as pd
 import numpy as np
 import time
@@ -8,6 +8,9 @@ import glob
 from collections import Counter
 
 from features.utils import fillAllTime
+
+# Default datetime format
+DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S+00'
 
 # Sentiment column names extracted from VADER process
 VADER_COLUMNS = [
@@ -80,10 +83,10 @@ def weight_mean(x, df, weight_col, offset=0):
     return np.average(x, weights=weights)
 
 
-def date_filter(df, start_date=None, end_date=None, timestamp_col='timestamp'):
+def date_filter(df, start_date=None, end_date=None, timestamp_col='timestamp', datetime_format=DATETIME_FORMAT):
     """ Filter DataFrame between dates """
 
-    df[timestamp_col] = pd.to_datetime(df[timestamp_col], format='%Y-%m-%d %H:%M:%S+00')
+    df[timestamp_col] = pd.to_datetime(df[timestamp_col], format=datetime_format)
 
     print("Filtering rows")
     # Filter to tret only valid data between start_date and end_date
@@ -174,11 +177,11 @@ def tweet_featuring(df, aggregate_cols, sentiment_cols, use_textBlob, use_vader)
     return agg_df
 
 
-def preprocess_tweet_level(df, sentiment_cols, start_date, end_date, timestamp_col):
+def preprocess_tweet_level(df, sentiment_cols, start_date, end_date, timestamp_col, datetime_format=DATETIME_FORMAT):
     """ Preprocess raw tweets data which can be treated at tweet level """
 
     # Filter DataFrame to only include data between start_date and end_date
-    df = date_filter(df, start_date=start_date, end_date=end_date, timestamp_col=timestamp_col)
+    df = date_filter(df, start_date=start_date, end_date=end_date, timestamp_col=timestamp_col, datetime_format=datetime_format)
 
     # Run sentiment on the dataset
     df, sentiment_cols, use_textBlob, use_vader = calculate_sentiment(df, sentiment_cols)
@@ -217,11 +220,11 @@ def final_preprocess(df, freq, aggregate_cols, sentiment_cols, use_textBlob, use
     return df
 
 
-def tweets_preprocess(df, freq='min', sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS, aggregate_cols=['replies', 'likes', 'retweets'], start_date=None, end_date=None, timestamp_col='timestamp', save_path='data/preprocess/twitter.csv', save_final_df=True):
+def tweets_preprocess(df, freq='min', sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS, aggregate_cols=['replies', 'likes', 'retweets'], start_date=None, end_date=None, timestamp_col='timestamp', datetime_format=DATETIME_FORMAT, save_path='data/preprocess/twitter.csv', save_final_df=True):
     """Preprocess tweets adding sentiment columns, creating features and aggregating them at frequency level """
 
     initial_lenght = len(df.index)
-    df, sentiment_cols, use_textBlob, use_vader = preprocess_tweet_level(df, sentiment_cols, start_date, end_date, timestamp_col)
+    df, sentiment_cols, use_textBlob, use_vader = preprocess_tweet_level(df, sentiment_cols, start_date, end_date, timestamp_col, datetime_format)
 
     print(f"After filter there are {len(df.index)} rows out of {initial_lenght}")
     if len(df.index) == 0:
@@ -233,7 +236,7 @@ def tweets_preprocess(df, freq='min', sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLU
     return df
 
 
-def chunk_tweets_preprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS, aggregate_cols=['replies', 'likes', 'retweets'], start_date=None, end_date=None, timestamp_col='timestamp', nrows=None, chunksize=5e5, save_path='data/preprocess/twitter.csv', write_files=True, save_final_df=True):
+def chunk_tweets_preprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS, aggregate_cols=[], start_date=None, end_date=None, timestamp_col='timestamp', datetime_format=DATETIME_FORMAT, nrows=None, chunksize=5e5, save_path='data/preprocess/twitter.csv', write_files=True, save_final_df=True):
     """Preprocess on tweet historical data in chunks, adding sentiment columns and aggregating them depending on different weight columns by frequency
     """
 
@@ -252,7 +255,7 @@ def chunk_tweets_preprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMN
     for i, raw_df in enumerate(raw_df_chunks):
         print(f"Processing chunk {i}...")
 
-        raw_df, sentiment_cols, use_textBlob, use_vader = preprocess_tweet_level(raw_df, sentiment_cols, start_date, end_date, timestamp_col)
+        raw_df, sentiment_cols, use_textBlob, use_vader = preprocess_tweet_level(raw_df, sentiment_cols, start_date, end_date, timestamp_col, datetime_format)
 
         print(f"After filter there are {len(raw_df.index)} rows out of {chunksize:.0f}")
         if len(raw_df.index) == 0:
@@ -308,6 +311,32 @@ def chunk_tweets_preprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMN
 
     return df
 
+# TODO: Could be interesting to get number of followers of the username
+def extract_tweets(tweets):
+    """ Transform data from list of Tweet objectes to DataFrame """
+    # Currently only using timestamp and text
+    # Data from favorites, replies and retweets differ between historical and inference 
+    data = {
+        'timestamp': [],
+        'text': [],
+        # 'favorites': [],
+        # 'replies': [],
+        # 'retweets': [],
+        # 'mentions': [],
+        # 'hashtags': [],
+        # 'urls': [],
+    }
+    for tweet in tweets:
+        data['timestamp'].append(tweet.date)
+        data['text'].append(tweet.text)
+        # data['favorites'].append(tweet.favorites)
+        # data['replies'].append(tweet.replies)
+        # data['retweets'].append(tweet.retweets)
+        # data['mentions'].append(len(tweet.mentions.split(' ')))
+        # data['hashtags'].append(len(tweet.hashtags.split(' ')))
+        # data['urls'].append(len(tweet.urls.split(',')))
+
+    return pd.DataFrame(data)
 
 if __name__ == "__main__":
     # Scrapped from twitters from 2016-01-01 to 2019-03-29, Collecting Tweets containing Bitcoin or BTC
@@ -334,6 +363,3 @@ if __name__ == "__main__":
         save_path='../data/preprocess/twitter_test.csv',
         write_files=False
     )
-
-
-# %%
