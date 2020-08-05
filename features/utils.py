@@ -183,6 +183,8 @@ def fillAllTime(df, freq='min', on=None, keep='first', start_dt=None, end_dt=Non
         )
     )
 
+    df_copy.index = df_copy.index.tz_convert(None)
+
     return all_mins.merge(
         df_copy,
         how='left',
