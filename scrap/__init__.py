@@ -1,0 +1,1 @@
+""" Scrap tweets submodule using [GetOldTweets3](https://github.com/Mottl/GetOldTweets3) library """
