@@ -36,7 +36,7 @@ body.gsc-overflow-hidden #sidebar {overflow: visible;}
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/sentiment_trader/blob/1cf060edabacd54109a50881cb61c3b8aa636579/features\tweets_preprocess.py#L0-L270" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/9f7818ba5218c70b6a95c6fb1be3baf977e157cf/features\tweets_preprocess.py#L0-L364" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">&#34;&#34;&#34; Tweet sentiment analysis feature engineering &#34;&#34;&#34;
 
@@ -48,6 +48,9 @@ import glob
 from collections import Counter
 
 from features.utils import fillAllTime
+
+# Default datetime format
+DATETIME_FORMAT = &#39;%Y-%m-%d %H:%M:%S+00&#39;
 
 # Sentiment column names extracted from VADER process
 VADER_COLUMNS = [
@@ -69,6 +72,9 @@ def addVaderSentiment(df, cols=VADER_COLUMNS):
     &#34;&#34;&#34;
     from features.utils import vec_vaderSentimentAnalyser
     from nltk.sentiment.vader import SentimentIntensityAnalyzer
+
+    if len(df.index) == 0:
+        return df
 
     analyser = SentimentIntensityAnalyzer()
     
@@ -95,6 +101,9 @@ def addTextBlobSentiment(df, cols=TEXTBLOB_COLUMNS):
     &#34;&#34;&#34;
     from features.utils import blobSentimentAnalyser
 
+    if len(df.index) == 0:
+        return df
+    
     sentiment_list = np.vectorize(blobSentimentAnalyser)(df[&#39;text&#39;])
     new_df = pd.DataFrame(
         sentiment_list,
@@ -114,15 +123,168 @@ def weight_mean(x, df, weight_col, offset=0):
     return np.average(x, weights=weights)
 
 
-def tweetsPreprocess(tweets_path, freq=&#39;min&#39;, sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS, aggregate_cols=[&#39;replies&#39;, &#39;likes&#39;, &#39;retweets&#39;], start_date=None, end_date=None, nrows=None, chunksize=5e5, save_path=&#39;data/preprocess/twitter.csv&#39;, write_files=True, save_final_df=True):
-    &#34;&#34;&#34;Preprocess on tweet historical data which adds sentiment columns and aggregate them depending on different weight columns by frequency
+def date_filter(df, start_date=None, end_date=None, timestamp_col=&#39;timestamp&#39;, datetime_format=DATETIME_FORMAT):
+    &#34;&#34;&#34; Filter DataFrame between dates &#34;&#34;&#34;
+
+    df[timestamp_col] = pd.to_datetime(df[timestamp_col], format=datetime_format)
+
+    print(&#34;Filtering rows&#34;)
+    # Filter to tret only valid data between start_date and end_date
+    min_time = df[timestamp_col].min()
+    max_time = df[timestamp_col].max()
+    print(f&#39;Min timestamp {min_time}, Max timestamp {max_time}&#39;)
+
+    df = df[
+        (df[timestamp_col].notnull())
+        &amp; (df[&#39;text&#39;].notnull())
+        &amp; ((start_date is None) | (df[timestamp_col] &gt;= start_date))
+        &amp; ((end_date is None) | (df[timestamp_col] &lt;= end_date))
+    ]
+    
+    return df
+
+
+def calculate_sentiment(df, sentiment_cols):
+    &#34;&#34;&#34; Calculate sentiment of each tweet on DataFrame &#34;&#34;&#34;
+
+    # Check and store columns used in sentiment_cols
+    vader_cols = [col for col in sentiment_cols if col in VADER_COLUMNS]
+    use_vader = len(vader_cols) &gt; 0
+
+    textBlob_cols = [col for col in sentiment_cols if col in TEXTBLOB_COLUMNS]
+    use_textBlob = len(textBlob_cols) &gt; 0
+
+    # TODO: Add moving average on sentiment
+    # Process VADER sentiment only if required
+    if use_vader:
+        print(&#34;Adding VADER Sentiment&#34;)
+        df = addVaderSentiment(df, vader_cols)
+        sentiment_cols = list(set(sentiment_cols + vader_cols))
+
+    # Process TextBlob sentiment only if required
+    if use_textBlob:
+        print(&#34;Adding TextBlob Sentiment&#34;)
+        df = addTextBlobSentiment(df, textBlob_cols)
+        sentiment_cols = list(set(sentiment_cols + textBlob_cols))
+
+    return df, sentiment_cols, use_textBlob, use_vader
+
+
+def tweet_featuring(df, aggregate_cols, sentiment_cols, use_textBlob, use_vader):
+    &#34;&#34;&#34; Perform featuring on tweets numerical data and aggregate it at current time level &#34;&#34;&#34;
+
+    # TODO: Add parametrizable &#39;aggregate_func&#39; instead of directly [&#39;sum&#39;,&#39;mean&#39;]
+    # Define simple operation to do on &#39;aggregate_cols&#39; when aggregating by freq
+    func_dict = dict(
+        zip(
+            aggregate_cols,
+            [[&#39;sum&#39;,&#39;mean&#39;],] * len(aggregate_cols)
+        )
+    )
+
+    if use_vader or use_textBlob:
+        # Define weighted means to do on &#39;sentiment_cols&#39; when aggregating by freq
+        weight_cols = aggregate_cols
+        # TODO: Add parametrizable &#39;agg_sentiment_func&#39; instead of directly [&#39;mean&#39;]
+        agg_sentiment_func = [&#39;mean&#39;]
+        replace_dict = {}
+        for i, weight_col in enumerate(weight_cols):
+            agg_sentiment_func.append(
+                lambda x: weight_mean(x, df, weight_col=weight_col, offset=0)
+            )
+
+            replace_dict[f&#39;&lt;lambda_{i}&gt;&#39;] = f&#39;{weight_col}_mean&#39;
+
+        func_dict.update(
+            dict(
+                zip(
+                    sentiment_cols,
+                    [agg_sentiment_func,] * len(sentiment_cols)
+                )
+            )
+        )
+
+    print(&#34;Aggregating by timestamp&#34;)
+    agg_df = df.groupby([&#39;timestamp&#39;]).agg(func_dict)
+
+    # As weighted means are defined by lambda functions, these have to be renamed
+    agg_df.columns = list(
+        agg_df.columns.to_frame()
+            .replace(replace_dict)
+            .agg(&#39;_&#39;.join, axis=1)
+    )
+
+    return agg_df
+
+
+def preprocess_tweet_level(df, sentiment_cols, start_date, end_date, timestamp_col, datetime_format=DATETIME_FORMAT):
+    &#34;&#34;&#34; Preprocess raw tweets data which can be treated at tweet level &#34;&#34;&#34;
+
+    # Filter DataFrame to only include data between start_date and end_date
+    df = date_filter(df, start_date=start_date, end_date=end_date, timestamp_col=timestamp_col, datetime_format=datetime_format)
+
+    # Run sentiment on the dataset
+    df, sentiment_cols, use_textBlob, use_vader = calculate_sentiment(df, sentiment_cols)
+
+    return df, sentiment_cols, use_textBlob, use_vader
+
+
+def final_preprocess(df, freq, aggregate_cols, sentiment_cols, use_textBlob, use_vader, start_date, end_date, timestamp_col, save_path, save_final_df=True, sep=&#39;\t&#39;):
+    &#34;&#34;&#34; Preprocess data containing already sentiment values, generate new features and make sure of data consistency &#34;&#34;&#34;    
+
+    # Floor timestamp at freq level to make sure that aggregation process is done correctly
+    print(&#34;Flooring timestamp&#34;)
+    df[timestamp_col] = df[timestamp_col].dt.floor(freq)
+
+    # Process tweets to aggregate DataFrame at timestamp (freq) level
+    agg_df = tweet_featuring(df, aggregate_cols, sentiment_cols, use_textBlob, use_vader)
+
+    print(&#34;Filling All Time data&#34;)
+    # Fill all the seconds between first and last second of data
+    df = fillAllTime(
+        agg_df,
+        freq=freq
+    )
+
+    # Add 0/1 column defining each freq when it has not been tweets
+    df[&#39;no_tweets&#39;] = df.iloc[:,0].isnull().astype(&#39;int8&#39;)
+
+    # Filling nulls (frequencies where it has not been tweets) with 0&#39;s
+    df = df.fillna(0)
+
+    if save_final_df:
+        partial_file = os.path.splitext(save_path)
+        save_final_path = f&#39;{partial_file[0]}_{start_date}_-_{end_date}{partial_file[1]}&#39;
+        df.to_csv(save_final_path, sep=sep, index_label=timestamp_col)
+
+    return df
+
+
+def tweets_preprocess(df, freq=&#39;min&#39;, sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS, aggregate_cols=[&#39;replies&#39;, &#39;likes&#39;, &#39;retweets&#39;], start_date=None, end_date=None, timestamp_col=&#39;timestamp&#39;, datetime_format=DATETIME_FORMAT, save_path=&#39;data/preprocess/twitter.csv&#39;, save_final_df=True):
+    &#34;&#34;&#34;Preprocess tweets adding sentiment columns, creating features and aggregating them at frequency level &#34;&#34;&#34;
+
+    initial_lenght = len(df.index)
+    df, sentiment_cols, use_textBlob, use_vader = preprocess_tweet_level(df, sentiment_cols, start_date, end_date, timestamp_col, datetime_format)
+
+    print(f&#34;After filter there are {len(df.index)} rows out of {initial_lenght}&#34;)
+    if len(df.index) == 0:
+        print(f&#34;No data between starting date &#39;{start_date}&#39; and ending date &#39;{end_date}&#39;&#34;)
+        return df
+
+    df = final_preprocess(df, freq, aggregate_cols, sentiment_cols, use_textBlob, use_vader, start_date, end_date, timestamp_col, save_path, save_final_df, sep=&#39;\t&#39;)
+
+    return df
+
+
+def chunk_tweets_preprocess(tweets_path, freq=&#39;min&#39;, sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS, aggregate_cols=[], start_date=None, end_date=None, timestamp_col=&#39;timestamp&#39;, datetime_format=DATETIME_FORMAT, nrows=None, chunksize=5e5, save_path=&#39;data/preprocess/twitter.csv&#39;, write_files=True, save_final_df=True):
+    &#34;&#34;&#34;Preprocess on tweet historical data in chunks, adding sentiment columns and aggregating them depending on different weight columns by frequency
     &#34;&#34;&#34;
 
     print(&#34;Loading raw file&#34;)
     raw_df_chunks = pd.read_csv(
         tweets_path,
         sep=&#39;;&#39;,
-        usecols=[&#39;timestamp&#39;, &#39;text&#39;] + aggregate_cols,
+        usecols=[timestamp_col, &#39;text&#39;] + aggregate_cols,
         nrows=nrows,
         chunksize=chunksize,
         engine=&#39;python&#39;,
@@ -132,48 +294,15 @@ def tweetsPreprocess(tweets_path, freq=&#39;min&#39;, sentiment_cols=VADER_COLUM
     saved_files = []
     for i, raw_df in enumerate(raw_df_chunks):
         print(f&#34;Processing chunk {i}...&#34;)
-        print(&#34;Transforming timestamp to datetime format&#34;)
-        raw_df[&#39;timestamp&#39;] = pd.to_datetime(raw_df[&#39;timestamp&#39;], format=&#39;%Y-%m-%d %H:%M:%S+00&#39;)
 
-        print(&#34;Filtering rows&#34;)
-        # Filter to tret only valid data between start_date and end_date
-        min_time = raw_df[&#39;timestamp&#39;].min()
-        max_time = raw_df[&#39;timestamp&#39;].max()
-        print(f&#39;Min timestamp {min_time}, Max timestamp {max_time}&#39;)
-
-        raw_df = raw_df[
-            (raw_df[&#39;timestamp&#39;].notnull())
-            &amp; (raw_df[&#39;text&#39;].notnull())
-            &amp; ((start_date is None) | (raw_df[&#39;timestamp&#39;] &gt;= start_date))
-            &amp; ((end_date is None) | (raw_df[&#39;timestamp&#39;] &lt;= end_date))
-        ]
+        raw_df, sentiment_cols, use_textBlob, use_vader = preprocess_tweet_level(raw_df, sentiment_cols, start_date, end_date, timestamp_col, datetime_format)
 
         print(f&#34;After filter there are {len(raw_df.index)} rows out of {chunksize:.0f}&#34;)
         if len(raw_df.index) == 0:
             continue
 
-        # Check and store columns used in sentiment_cols
-        vader_cols = [col for col in sentiment_cols if col in VADER_COLUMNS]
-        use_vader = len(vader_cols) &gt; 0
-
-        textBlob_cols = [col for col in sentiment_cols if col in TEXTBLOB_COLUMNS]
-        use_textBlob = len(textBlob_cols) &gt; 0
-
-        # TODO: Add moving average on sentiment
-        # Process VADER sentiment only if required
-        if use_vader:
-            print(&#34;Adding VADER Sentiment&#34;)
-            raw_df = addVaderSentiment(raw_df, vader_cols)
-            sentiment_cols = list(set(sentiment_cols + vader_cols))
-
-        # Process TextBlob sentiment only if required
-        if use_textBlob:
-            print(&#34;Adding TextBlob Sentiment&#34;)
-            raw_df = addTextBlobSentiment(raw_df, textBlob_cols)
-            sentiment_cols = list(set(sentiment_cols + textBlob_cols))
-
         # Summarise all columns which are stored
-        columns = [&#39;timestamp&#39;] + aggregate_cols + sentiment_cols
+        columns = [timestamp_col] + aggregate_cols + sentiment_cols
 
         # Use write_files when data is too large to fit in-memory
         if write_files:
@@ -208,7 +337,7 @@ def tweetsPreprocess(tweets_path, freq=&#39;min&#39;, sentiment_cols=VADER_COLUM
 
         # Read file with all the chunks together
         all_df = pd.read_csv(save_path, sep=&#39;\t&#39;, usecols=columns)
-        all_df[&#39;timestamp&#39;] = pd.to_datetime(all_df[&#39;timestamp&#39;], format=&#39;%Y-%m-%d %H:%M:%S&#39;, errors=&#39;coerce&#39;)
+        all_df[timestamp_col] = pd.to_datetime(all_df[timestamp_col], format=&#39;%Y-%m-%d %H:%M:%S&#39;, errors=&#39;coerce&#39;)
 
         # Remove temporary files
         for f in saved_files:
@@ -218,85 +347,50 @@ def tweetsPreprocess(tweets_path, freq=&#39;min&#39;, sentiment_cols=VADER_COLUM
     else:
         all_df = pd.concat(all_list)
 
-    # Floor timestamp at freq level to make sure that aggregation process is done correctly
-    print(&#34;Flooring timestamp&#34;)
-    all_df[&#39;timestamp&#39;] = all_df[&#39;timestamp&#39;].dt.floor(freq)
-
-    # TODO: Add parametrizable &#39;aggregate_func&#39; instead of directly [&#39;sum&#39;,&#39;mean&#39;]
-    # Define simple operation to do on &#39;aggregate_cols&#39; when aggregating by freq
-    func_dict = dict(
-        zip(
-            aggregate_cols,
-            [[&#39;sum&#39;,&#39;mean&#39;],] * len(aggregate_cols)
-        )
-    )
-
-    if use_vader or use_textBlob:
-        # Define weighted means to do on &#39;sentiment_cols&#39; when aggregating by freq
-        weight_cols = aggregate_cols
-        # TODO: Add parametrizable &#39;agg_sentiment_func&#39; instead of directly [&#39;mean&#39;]
-        agg_sentiment_func = [&#39;mean&#39;]
-        replace_dict = {}
-        for i, weight_col in enumerate(weight_cols):
-            agg_sentiment_func.append(
-                lambda x: weight_mean(x, all_df, weight_col=weight_col, offset=0)
-            )
-
-            replace_dict[f&#39;&lt;lambda_{i}&gt;&#39;] = f&#39;{weight_col}_mean&#39;
-
-        func_dict.update(
-            dict(
-                zip(
-                    sentiment_cols,
-                    [agg_sentiment_func,] * len(sentiment_cols)
-                )
-            )
-        )
-
-    print(&#34;Aggregating by timestamp&#34;)
-    agg_df = all_df.groupby([&#39;timestamp&#39;]).agg(func_dict)
-
-    # As weighted means are defined by lambda functions, these have to be renamed
-    agg_df.columns = list(
-        agg_df.columns.to_frame()
-            .replace(replace_dict)
-            .agg(&#39;_&#39;.join, axis=1)
-    )
-
-    print(&#34;Filling All Time data&#34;)
-    # Fill all the seconds between first and last second of data
-    df = fillAllTime(
-        agg_df,
-        freq=freq
-    )
-
-    # Add 0/1 column defining each freq when it has not been tweets
-    df[&#39;no_tweets&#39;] = df.iloc[:,0].isnull().astype(&#39;int8&#39;)
-
-    # Filling nulls (frequencies where it has not been tweets) with 0&#39;s
-    df = df.fillna(0)
-
-    if save_final_df:
-        partial_file = os.path.splitext(save_path)
-        save_final_path = f&#39;{partial_file[0]}_{start_date}_-_{end_date}{partial_file[1]}&#39;
-        df.to_csv(save_final_path, sep=&#39;\t&#39;, index_label=&#39;timestamp&#39;)
+    df = final_preprocess(all_df, freq, aggregate_cols, sentiment_cols, use_textBlob, use_vader, start_date, end_date, timestamp_col, save_path, save_final_df, sep=&#39;\t&#39;)
 
     return df
 
+# TODO: Could be interesting to get number of followers of the username
+def extract_tweets(tweets):
+    &#34;&#34;&#34; Transform data from list of Tweet objectes to DataFrame &#34;&#34;&#34;
+    # Currently only using timestamp and text
+    # Data from favorites, replies and retweets differ between historical and inference 
+    data = {
+        &#39;timestamp&#39;: [],
+        &#39;text&#39;: [],
+        # &#39;favorites&#39;: [],
+        # &#39;replies&#39;: [],
+        # &#39;retweets&#39;: [],
+        # &#39;mentions&#39;: [],
+        # &#39;hashtags&#39;: [],
+        # &#39;urls&#39;: [],
+    }
+    for tweet in tweets:
+        data[&#39;timestamp&#39;].append(tweet.date)
+        data[&#39;text&#39;].append(tweet.text)
+        # data[&#39;favorites&#39;].append(tweet.favorites)
+        # data[&#39;replies&#39;].append(tweet.replies)
+        # data[&#39;retweets&#39;].append(tweet.retweets)
+        # data[&#39;mentions&#39;].append(len(tweet.mentions.split(&#39; &#39;)))
+        # data[&#39;hashtags&#39;].append(len(tweet.hashtags.split(&#39; &#39;)))
+        # data[&#39;urls&#39;].append(len(tweet.urls.split(&#39;,&#39;)))
+
+    return pd.DataFrame(data)
 
 if __name__ == &#34;__main__&#34;:
     # Scrapped from twitters from 2016-01-01 to 2019-03-29, Collecting Tweets containing Bitcoin or BTC
-    tweets_path = &#39;data/sources/tweets_historical.csv&#39;
+    tweets_path = &#39;../data/sources/tweets_historical.csv&#39;
 
     start_date=&#39;2019-01-01&#39;
-    end_date=&#39;2019-03-28&#39;
+    end_date=&#39;2019-01-02&#39;
 
-    freq = &#39;min&#39;
+    freq = &#39;h&#39;
 
     # TODO: Save tweets sentiment independent of prices and one file per date range and frequency
 
-    print(&#34;Start tweetsPreprocess&#34;)
-    tweets_df = tweetsPreprocess(
+    print(&#34;Start chunk_tweets_preprocess&#34;)
+    tweets_df = chunk_tweets_preprocess(
         tweets_path,
         freq=freq,
         # sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS,
@@ -304,9 +398,9 @@ if __name__ == &#34;__main__&#34;:
         aggregate_cols=[&#39;replies&#39;, &#39;likes&#39;, &#39;retweets&#39;],
         start_date=start_date,
         end_date=end_date,
-        nrows=None,
-        chunksize=5e5,
-        save_path=&#39;data/preprocess/twitter.csv&#39;,
+        nrows=80000,
+        chunksize=5e4,
+        save_path=&#39;../data/preprocess/twitter_test.csv&#39;,
         write_files=False
     )</code></pre>
 </details>
@@ -326,13 +420,16 @@ if __name__ == &#34;__main__&#34;:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/sentiment_trader/blob/1cf060edabacd54109a50881cb61c3b8aa636579/features\tweets_preprocess.py#L53-L65" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/9f7818ba5218c70b6a95c6fb1be3baf977e157cf/features\tweets_preprocess.py#L59-L74" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def addTextBlobSentiment(df, cols=TEXTBLOB_COLUMNS):
     &#34;&#34;&#34;Returns input DataFrame adding TextBlob sentiment columns
     &#34;&#34;&#34;
     from features.utils import blobSentimentAnalyser
 
+    if len(df.index) == 0:
+        return df
+    
     sentiment_list = np.vectorize(blobSentimentAnalyser)(df[&#39;text&#39;])
     new_df = pd.DataFrame(
         sentiment_list,
@@ -351,13 +448,16 @@ if __name__ == &#34;__main__&#34;:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/sentiment_trader/blob/1cf060edabacd54109a50881cb61c3b8aa636579/features\tweets_preprocess.py#L27-L51" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/9f7818ba5218c70b6a95c6fb1be3baf977e157cf/features\tweets_preprocess.py#L30-L57" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def addVaderSentiment(df, cols=VADER_COLUMNS):
     &#34;&#34;&#34;Returns input DataFrame adding VADER sentiment columns
     &#34;&#34;&#34;
     from features.utils import vec_vaderSentimentAnalyser
     from nltk.sentiment.vader import SentimentIntensityAnalyzer
+
+    if len(df.index) == 0:
+        return df
 
     analyser = SentimentIntensityAnalyzer()
     
@@ -380,25 +480,61 @@ if __name__ == &#34;__main__&#34;:
     return pd.concat([df, new_df], axis=1)</code></pre>
 </details>
 </dd>
-<dt id="sentiment_trader.features.tweets_preprocess.tweetsPreprocess"><code class="name flex">
-<span>def <span class="ident">tweetsPreprocess</span></span>(<span>tweets_path, freq='min', sentiment_cols=['Negative', 'Neutral', 'Positive', 'Compound', 'Polarity', 'Subjectivity'], aggregate_cols=['replies', 'likes', 'retweets'], start_date=None, end_date=None, nrows=None, chunksize=500000.0, save_path='data/preprocess/twitter.csv', write_files=True, save_final_df=True)</span>
+<dt id="sentiment_trader.features.tweets_preprocess.calculate_sentiment"><code class="name flex">
+<span>def <span class="ident">calculate_sentiment</span></span>(<span>df, sentiment_cols)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Preprocess on tweet historical data which adds sentiment columns and aggregate them depending on different weight columns by frequency</p></div>
+<div class="desc"><p>Calculate sentiment of each tweet on DataFrame</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/sentiment_trader/blob/1cf060edabacd54109a50881cb61c3b8aa636579/features\tweets_preprocess.py#L77-L244" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/9f7818ba5218c70b6a95c6fb1be3baf977e157cf/features\tweets_preprocess.py#L107-L130" class="git-link">Browse git</a>
 </summary>
-<pre><code class="python">def tweetsPreprocess(tweets_path, freq=&#39;min&#39;, sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS, aggregate_cols=[&#39;replies&#39;, &#39;likes&#39;, &#39;retweets&#39;], start_date=None, end_date=None, nrows=None, chunksize=5e5, save_path=&#39;data/preprocess/twitter.csv&#39;, write_files=True, save_final_df=True):
-    &#34;&#34;&#34;Preprocess on tweet historical data which adds sentiment columns and aggregate them depending on different weight columns by frequency
+<pre><code class="python">def calculate_sentiment(df, sentiment_cols):
+    &#34;&#34;&#34; Calculate sentiment of each tweet on DataFrame &#34;&#34;&#34;
+
+    # Check and store columns used in sentiment_cols
+    vader_cols = [col for col in sentiment_cols if col in VADER_COLUMNS]
+    use_vader = len(vader_cols) &gt; 0
+
+    textBlob_cols = [col for col in sentiment_cols if col in TEXTBLOB_COLUMNS]
+    use_textBlob = len(textBlob_cols) &gt; 0
+
+    # TODO: Add moving average on sentiment
+    # Process VADER sentiment only if required
+    if use_vader:
+        print(&#34;Adding VADER Sentiment&#34;)
+        df = addVaderSentiment(df, vader_cols)
+        sentiment_cols = list(set(sentiment_cols + vader_cols))
+
+    # Process TextBlob sentiment only if required
+    if use_textBlob:
+        print(&#34;Adding TextBlob Sentiment&#34;)
+        df = addTextBlobSentiment(df, textBlob_cols)
+        sentiment_cols = list(set(sentiment_cols + textBlob_cols))
+
+    return df, sentiment_cols, use_textBlob, use_vader</code></pre>
+</details>
+</dd>
+<dt id="sentiment_trader.features.tweets_preprocess.chunk_tweets_preprocess"><code class="name flex">
+<span>def <span class="ident">chunk_tweets_preprocess</span></span>(<span>tweets_path, freq='min', sentiment_cols=['Negative', 'Neutral', 'Positive', 'Compound', 'Polarity', 'Subjectivity'], aggregate_cols=[], start_date=None, end_date=None, timestamp_col='timestamp', datetime_format='%Y-%m-%d %H:%M:%S+00', nrows=None, chunksize=500000.0, save_path='data/preprocess/twitter.csv', write_files=True, save_final_df=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Preprocess on tweet historical data in chunks, adding sentiment columns and aggregating them depending on different weight columns by frequency</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/9f7818ba5218c70b6a95c6fb1be3baf977e157cf/features\tweets_preprocess.py#L239-L312" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">def chunk_tweets_preprocess(tweets_path, freq=&#39;min&#39;, sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS, aggregate_cols=[], start_date=None, end_date=None, timestamp_col=&#39;timestamp&#39;, datetime_format=DATETIME_FORMAT, nrows=None, chunksize=5e5, save_path=&#39;data/preprocess/twitter.csv&#39;, write_files=True, save_final_df=True):
+    &#34;&#34;&#34;Preprocess on tweet historical data in chunks, adding sentiment columns and aggregating them depending on different weight columns by frequency
     &#34;&#34;&#34;
 
     print(&#34;Loading raw file&#34;)
     raw_df_chunks = pd.read_csv(
         tweets_path,
         sep=&#39;;&#39;,
-        usecols=[&#39;timestamp&#39;, &#39;text&#39;] + aggregate_cols,
+        usecols=[timestamp_col, &#39;text&#39;] + aggregate_cols,
         nrows=nrows,
         chunksize=chunksize,
         engine=&#39;python&#39;,
@@ -408,48 +544,15 @@ if __name__ == &#34;__main__&#34;:
     saved_files = []
     for i, raw_df in enumerate(raw_df_chunks):
         print(f&#34;Processing chunk {i}...&#34;)
-        print(&#34;Transforming timestamp to datetime format&#34;)
-        raw_df[&#39;timestamp&#39;] = pd.to_datetime(raw_df[&#39;timestamp&#39;], format=&#39;%Y-%m-%d %H:%M:%S+00&#39;)
 
-        print(&#34;Filtering rows&#34;)
-        # Filter to tret only valid data between start_date and end_date
-        min_time = raw_df[&#39;timestamp&#39;].min()
-        max_time = raw_df[&#39;timestamp&#39;].max()
-        print(f&#39;Min timestamp {min_time}, Max timestamp {max_time}&#39;)
-
-        raw_df = raw_df[
-            (raw_df[&#39;timestamp&#39;].notnull())
-            &amp; (raw_df[&#39;text&#39;].notnull())
-            &amp; ((start_date is None) | (raw_df[&#39;timestamp&#39;] &gt;= start_date))
-            &amp; ((end_date is None) | (raw_df[&#39;timestamp&#39;] &lt;= end_date))
-        ]
+        raw_df, sentiment_cols, use_textBlob, use_vader = preprocess_tweet_level(raw_df, sentiment_cols, start_date, end_date, timestamp_col, datetime_format)
 
         print(f&#34;After filter there are {len(raw_df.index)} rows out of {chunksize:.0f}&#34;)
         if len(raw_df.index) == 0:
             continue
 
-        # Check and store columns used in sentiment_cols
-        vader_cols = [col for col in sentiment_cols if col in VADER_COLUMNS]
-        use_vader = len(vader_cols) &gt; 0
-
-        textBlob_cols = [col for col in sentiment_cols if col in TEXTBLOB_COLUMNS]
-        use_textBlob = len(textBlob_cols) &gt; 0
-
-        # TODO: Add moving average on sentiment
-        # Process VADER sentiment only if required
-        if use_vader:
-            print(&#34;Adding VADER Sentiment&#34;)
-            raw_df = addVaderSentiment(raw_df, vader_cols)
-            sentiment_cols = list(set(sentiment_cols + vader_cols))
-
-        # Process TextBlob sentiment only if required
-        if use_textBlob:
-            print(&#34;Adding TextBlob Sentiment&#34;)
-            raw_df = addTextBlobSentiment(raw_df, textBlob_cols)
-            sentiment_cols = list(set(sentiment_cols + textBlob_cols))
-
         # Summarise all columns which are stored
-        columns = [&#39;timestamp&#39;] + aggregate_cols + sentiment_cols
+        columns = [timestamp_col] + aggregate_cols + sentiment_cols
 
         # Use write_files when data is too large to fit in-memory
         if write_files:
@@ -484,7 +587,7 @@ if __name__ == &#34;__main__&#34;:
 
         # Read file with all the chunks together
         all_df = pd.read_csv(save_path, sep=&#39;\t&#39;, usecols=columns)
-        all_df[&#39;timestamp&#39;] = pd.to_datetime(all_df[&#39;timestamp&#39;], format=&#39;%Y-%m-%d %H:%M:%S&#39;, errors=&#39;coerce&#39;)
+        all_df[timestamp_col] = pd.to_datetime(all_df[timestamp_col], format=&#39;%Y-%m-%d %H:%M:%S&#39;, errors=&#39;coerce&#39;)
 
         # Remove temporary files
         for f in saved_files:
@@ -494,9 +597,154 @@ if __name__ == &#34;__main__&#34;:
     else:
         all_df = pd.concat(all_list)
 
+    df = final_preprocess(all_df, freq, aggregate_cols, sentiment_cols, use_textBlob, use_vader, start_date, end_date, timestamp_col, save_path, save_final_df, sep=&#39;\t&#39;)
+
+    return df</code></pre>
+</details>
+</dd>
+<dt id="sentiment_trader.features.tweets_preprocess.date_filter"><code class="name flex">
+<span>def <span class="ident">date_filter</span></span>(<span>df, start_date=None, end_date=None, timestamp_col='timestamp', datetime_format='%Y-%m-%d %H:%M:%S+00')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Filter DataFrame between dates</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/9f7818ba5218c70b6a95c6fb1be3baf977e157cf/features\tweets_preprocess.py#L86-L104" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">def date_filter(df, start_date=None, end_date=None, timestamp_col=&#39;timestamp&#39;, datetime_format=DATETIME_FORMAT):
+    &#34;&#34;&#34; Filter DataFrame between dates &#34;&#34;&#34;
+
+    df[timestamp_col] = pd.to_datetime(df[timestamp_col], format=datetime_format)
+
+    print(&#34;Filtering rows&#34;)
+    # Filter to tret only valid data between start_date and end_date
+    min_time = df[timestamp_col].min()
+    max_time = df[timestamp_col].max()
+    print(f&#39;Min timestamp {min_time}, Max timestamp {max_time}&#39;)
+
+    df = df[
+        (df[timestamp_col].notnull())
+        &amp; (df[&#39;text&#39;].notnull())
+        &amp; ((start_date is None) | (df[timestamp_col] &gt;= start_date))
+        &amp; ((end_date is None) | (df[timestamp_col] &lt;= end_date))
+    ]
+    
+    return df</code></pre>
+</details>
+</dd>
+<dt id="sentiment_trader.features.tweets_preprocess.extract_tweets"><code class="name flex">
+<span>def <span class="ident">extract_tweets</span></span>(<span>tweets)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Transform data from list of Tweet objectes to DataFrame</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/9f7818ba5218c70b6a95c6fb1be3baf977e157cf/features\tweets_preprocess.py#L315-L339" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">def extract_tweets(tweets):
+    &#34;&#34;&#34; Transform data from list of Tweet objectes to DataFrame &#34;&#34;&#34;
+    # Currently only using timestamp and text
+    # Data from favorites, replies and retweets differ between historical and inference 
+    data = {
+        &#39;timestamp&#39;: [],
+        &#39;text&#39;: [],
+        # &#39;favorites&#39;: [],
+        # &#39;replies&#39;: [],
+        # &#39;retweets&#39;: [],
+        # &#39;mentions&#39;: [],
+        # &#39;hashtags&#39;: [],
+        # &#39;urls&#39;: [],
+    }
+    for tweet in tweets:
+        data[&#39;timestamp&#39;].append(tweet.date)
+        data[&#39;text&#39;].append(tweet.text)
+        # data[&#39;favorites&#39;].append(tweet.favorites)
+        # data[&#39;replies&#39;].append(tweet.replies)
+        # data[&#39;retweets&#39;].append(tweet.retweets)
+        # data[&#39;mentions&#39;].append(len(tweet.mentions.split(&#39; &#39;)))
+        # data[&#39;hashtags&#39;].append(len(tweet.hashtags.split(&#39; &#39;)))
+        # data[&#39;urls&#39;].append(len(tweet.urls.split(&#39;,&#39;)))
+
+    return pd.DataFrame(data)</code></pre>
+</details>
+</dd>
+<dt id="sentiment_trader.features.tweets_preprocess.final_preprocess"><code class="name flex">
+<span>def <span class="ident">final_preprocess</span></span>(<span>df, freq, aggregate_cols, sentiment_cols, use_textBlob, use_vader, start_date, end_date, timestamp_col, save_path, save_final_df=True, sep='\t')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Preprocess data containing already sentiment values, generate new features and make sure of data consistency</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/9f7818ba5218c70b6a95c6fb1be3baf977e157cf/features\tweets_preprocess.py#L192-L220" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">def final_preprocess(df, freq, aggregate_cols, sentiment_cols, use_textBlob, use_vader, start_date, end_date, timestamp_col, save_path, save_final_df=True, sep=&#39;\t&#39;):
+    &#34;&#34;&#34; Preprocess data containing already sentiment values, generate new features and make sure of data consistency &#34;&#34;&#34;    
+
     # Floor timestamp at freq level to make sure that aggregation process is done correctly
     print(&#34;Flooring timestamp&#34;)
-    all_df[&#39;timestamp&#39;] = all_df[&#39;timestamp&#39;].dt.floor(freq)
+    df[timestamp_col] = df[timestamp_col].dt.floor(freq)
+
+    # Process tweets to aggregate DataFrame at timestamp (freq) level
+    agg_df = tweet_featuring(df, aggregate_cols, sentiment_cols, use_textBlob, use_vader)
+
+    print(&#34;Filling All Time data&#34;)
+    # Fill all the seconds between first and last second of data
+    df = fillAllTime(
+        agg_df,
+        freq=freq
+    )
+
+    # Add 0/1 column defining each freq when it has not been tweets
+    df[&#39;no_tweets&#39;] = df.iloc[:,0].isnull().astype(&#39;int8&#39;)
+
+    # Filling nulls (frequencies where it has not been tweets) with 0&#39;s
+    df = df.fillna(0)
+
+    if save_final_df:
+        partial_file = os.path.splitext(save_path)
+        save_final_path = f&#39;{partial_file[0]}_{start_date}_-_{end_date}{partial_file[1]}&#39;
+        df.to_csv(save_final_path, sep=sep, index_label=timestamp_col)
+
+    return df</code></pre>
+</details>
+</dd>
+<dt id="sentiment_trader.features.tweets_preprocess.preprocess_tweet_level"><code class="name flex">
+<span>def <span class="ident">preprocess_tweet_level</span></span>(<span>df, sentiment_cols, start_date, end_date, timestamp_col, datetime_format='%Y-%m-%d %H:%M:%S+00')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Preprocess raw tweets data which can be treated at tweet level</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/9f7818ba5218c70b6a95c6fb1be3baf977e157cf/features\tweets_preprocess.py#L180-L189" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">def preprocess_tweet_level(df, sentiment_cols, start_date, end_date, timestamp_col, datetime_format=DATETIME_FORMAT):
+    &#34;&#34;&#34; Preprocess raw tweets data which can be treated at tweet level &#34;&#34;&#34;
+
+    # Filter DataFrame to only include data between start_date and end_date
+    df = date_filter(df, start_date=start_date, end_date=end_date, timestamp_col=timestamp_col, datetime_format=datetime_format)
+
+    # Run sentiment on the dataset
+    df, sentiment_cols, use_textBlob, use_vader = calculate_sentiment(df, sentiment_cols)
+
+    return df, sentiment_cols, use_textBlob, use_vader</code></pre>
+</details>
+</dd>
+<dt id="sentiment_trader.features.tweets_preprocess.tweet_featuring"><code class="name flex">
+<span>def <span class="ident">tweet_featuring</span></span>(<span>df, aggregate_cols, sentiment_cols, use_textBlob, use_vader)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Perform featuring on tweets numerical data and aggregate it at current time level</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/9f7818ba5218c70b6a95c6fb1be3baf977e157cf/features\tweets_preprocess.py#L133-L177" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">def tweet_featuring(df, aggregate_cols, sentiment_cols, use_textBlob, use_vader):
+    &#34;&#34;&#34; Perform featuring on tweets numerical data and aggregate it at current time level &#34;&#34;&#34;
 
     # TODO: Add parametrizable &#39;aggregate_func&#39; instead of directly [&#39;sum&#39;,&#39;mean&#39;]
     # Define simple operation to do on &#39;aggregate_cols&#39; when aggregating by freq
@@ -515,7 +763,7 @@ if __name__ == &#34;__main__&#34;:
         replace_dict = {}
         for i, weight_col in enumerate(weight_cols):
             agg_sentiment_func.append(
-                lambda x: weight_mean(x, all_df, weight_col=weight_col, offset=0)
+                lambda x: weight_mean(x, df, weight_col=weight_col, offset=0)
             )
 
             replace_dict[f&#39;&lt;lambda_{i}&gt;&#39;] = f&#39;{weight_col}_mean&#39;
@@ -530,7 +778,7 @@ if __name__ == &#34;__main__&#34;:
         )
 
     print(&#34;Aggregating by timestamp&#34;)
-    agg_df = all_df.groupby([&#39;timestamp&#39;]).agg(func_dict)
+    agg_df = df.groupby([&#39;timestamp&#39;]).agg(func_dict)
 
     # As weighted means are defined by lambda functions, these have to be renamed
     agg_df.columns = list(
@@ -539,23 +787,31 @@ if __name__ == &#34;__main__&#34;:
             .agg(&#39;_&#39;.join, axis=1)
     )
 
-    print(&#34;Filling All Time data&#34;)
-    # Fill all the seconds between first and last second of data
-    df = fillAllTime(
-        agg_df,
-        freq=freq
-    )
+    return agg_df</code></pre>
+</details>
+</dd>
+<dt id="sentiment_trader.features.tweets_preprocess.tweets_preprocess"><code class="name flex">
+<span>def <span class="ident">tweets_preprocess</span></span>(<span>df, freq='min', sentiment_cols=['Negative', 'Neutral', 'Positive', 'Compound', 'Polarity', 'Subjectivity'], aggregate_cols=['replies', 'likes', 'retweets'], start_date=None, end_date=None, timestamp_col='timestamp', datetime_format='%Y-%m-%d %H:%M:%S+00', save_path='data/preprocess/twitter.csv', save_final_df=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Preprocess tweets adding sentiment columns, creating features and aggregating them at frequency level</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/9f7818ba5218c70b6a95c6fb1be3baf977e157cf/features\tweets_preprocess.py#L223-L236" class="git-link">Browse git</a>
+</summary>
+<pre><code class="python">def tweets_preprocess(df, freq=&#39;min&#39;, sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS, aggregate_cols=[&#39;replies&#39;, &#39;likes&#39;, &#39;retweets&#39;], start_date=None, end_date=None, timestamp_col=&#39;timestamp&#39;, datetime_format=DATETIME_FORMAT, save_path=&#39;data/preprocess/twitter.csv&#39;, save_final_df=True):
+    &#34;&#34;&#34;Preprocess tweets adding sentiment columns, creating features and aggregating them at frequency level &#34;&#34;&#34;
 
-    # Add 0/1 column defining each freq when it has not been tweets
-    df[&#39;no_tweets&#39;] = df.iloc[:,0].isnull().astype(&#39;int8&#39;)
+    initial_lenght = len(df.index)
+    df, sentiment_cols, use_textBlob, use_vader = preprocess_tweet_level(df, sentiment_cols, start_date, end_date, timestamp_col, datetime_format)
 
-    # Filling nulls (frequencies where it has not been tweets) with 0&#39;s
-    df = df.fillna(0)
+    print(f&#34;After filter there are {len(df.index)} rows out of {initial_lenght}&#34;)
+    if len(df.index) == 0:
+        print(f&#34;No data between starting date &#39;{start_date}&#39; and ending date &#39;{end_date}&#39;&#34;)
+        return df
 
-    if save_final_df:
-        partial_file = os.path.splitext(save_path)
-        save_final_path = f&#39;{partial_file[0]}_{start_date}_-_{end_date}{partial_file[1]}&#39;
-        df.to_csv(save_final_path, sep=&#39;\t&#39;, index_label=&#39;timestamp&#39;)
+    df = final_preprocess(df, freq, aggregate_cols, sentiment_cols, use_textBlob, use_vader, start_date, end_date, timestamp_col, save_path, save_final_df, sep=&#39;\t&#39;)
 
     return df</code></pre>
 </details>
@@ -568,7 +824,7 @@ if __name__ == &#34;__main__&#34;:
 <details class="source">
 <summary>
 <span>Expand source code</span>
-<a href="https://github.com/lluissalord/sentiment_trader/blob/1cf060edabacd54109a50881cb61c3b8aa636579/features\tweets_preprocess.py#L68-L74" class="git-link">Browse git</a>
+<a href="https://github.com/lluissalord/sentiment_trader/blob/9f7818ba5218c70b6a95c6fb1be3baf977e157cf/features\tweets_preprocess.py#L77-L83" class="git-link">Browse git</a>
 </summary>
 <pre><code class="python">def weight_mean(x, df, weight_col, offset=0):
     &#34;&#34;&#34;General function to calculate weighted mean depending on &#39;weight_col&#39;
@@ -603,7 +859,14 @@ data-gaCategoryParameter="sentiment_trader.features.tweets_preprocess">
 <ul class="">
 <li><code><a title="sentiment_trader.features.tweets_preprocess.addTextBlobSentiment" href="#sentiment_trader.features.tweets_preprocess.addTextBlobSentiment">addTextBlobSentiment</a></code></li>
 <li><code><a title="sentiment_trader.features.tweets_preprocess.addVaderSentiment" href="#sentiment_trader.features.tweets_preprocess.addVaderSentiment">addVaderSentiment</a></code></li>
-<li><code><a title="sentiment_trader.features.tweets_preprocess.tweetsPreprocess" href="#sentiment_trader.features.tweets_preprocess.tweetsPreprocess">tweetsPreprocess</a></code></li>
+<li><code><a title="sentiment_trader.features.tweets_preprocess.calculate_sentiment" href="#sentiment_trader.features.tweets_preprocess.calculate_sentiment">calculate_sentiment</a></code></li>
+<li><code><a title="sentiment_trader.features.tweets_preprocess.chunk_tweets_preprocess" href="#sentiment_trader.features.tweets_preprocess.chunk_tweets_preprocess">chunk_tweets_preprocess</a></code></li>
+<li><code><a title="sentiment_trader.features.tweets_preprocess.date_filter" href="#sentiment_trader.features.tweets_preprocess.date_filter">date_filter</a></code></li>
+<li><code><a title="sentiment_trader.features.tweets_preprocess.extract_tweets" href="#sentiment_trader.features.tweets_preprocess.extract_tweets">extract_tweets</a></code></li>
+<li><code><a title="sentiment_trader.features.tweets_preprocess.final_preprocess" href="#sentiment_trader.features.tweets_preprocess.final_preprocess">final_preprocess</a></code></li>
+<li><code><a title="sentiment_trader.features.tweets_preprocess.preprocess_tweet_level" href="#sentiment_trader.features.tweets_preprocess.preprocess_tweet_level">preprocess_tweet_level</a></code></li>
+<li><code><a title="sentiment_trader.features.tweets_preprocess.tweet_featuring" href="#sentiment_trader.features.tweets_preprocess.tweet_featuring">tweet_featuring</a></code></li>
+<li><code><a title="sentiment_trader.features.tweets_preprocess.tweets_preprocess" href="#sentiment_trader.features.tweets_preprocess.tweets_preprocess">tweets_preprocess</a></code></li>
 <li><code><a title="sentiment_trader.features.tweets_preprocess.weight_mean" href="#sentiment_trader.features.tweets_preprocess.weight_mean">weight_mean</a></code></li>
 </ul>
 </li>
