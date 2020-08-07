@@ -1,1 +1,1 @@
-""" Feature Engineering on prices and tweets sentiment. Prices feature engineering is based on Technical Analysis using [pandas-ta](https://github.com/twopirllc/pandas-ta) library """
+""" Feature Engineering on prices Technical Analysis and tweets sentiment. Technical Analysis uses [pandas-ta](https://github.com/twopirllc/pandas-ta) library """
