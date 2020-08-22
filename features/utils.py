@@ -239,4 +239,4 @@ def normalize_data(df, p_val_threshold=0.05, quantile_threshold=1000, max_quanti
         fitted_df[column] = transformer.fit_transform((df[column]).values.reshape(-1,1))
         transformers[column] = transformer
     
-    return fitted_df, transformer
+    return fitted_df, transformers
