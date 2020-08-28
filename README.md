@@ -24,3 +24,4 @@ In order to run Jupyter Notebook presented here, some CSV files are required. Th
 
 * Tweets about Bitcoin: https://www.kaggle.com/alaix14/bitcoin-tweets-20160101-to-20190329
 * Bitcoin prices: https://www.kaggle.com/mczielinski/bitcoin-historical-data#bitstampUSD_1-min_data_2012-01-01_to_2019-08-12.csv
+* Other historical prices: https://www.dukascopy.com/trading-tools/widgets/quotes/historical_data_feed
