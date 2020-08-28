@@ -189,7 +189,7 @@ def preprocess_tweet_level(df, sentiment_cols, start_date, end_date, timestamp_c
     return df, sentiment_cols, use_textBlob, use_vader
 
 
-def final_preprocess(df, freq, aggregate_cols, sentiment_cols, use_textBlob, use_vader, start_date, end_date, timestamp_col, save_path, save_final_df=True, sep='\t'):
+def final_preprocess(df, freq, aggregate_cols, sentiment_cols, use_textBlob, use_vader, start_date, end_date, timestamp_col, save_path, save_final_df=True, sep='\t', save_path_add_date=True):
     """ Preprocess data containing already sentiment values, generate new features and make sure of data consistency """    
 
     # Floor timestamp at freq level to make sure that aggregation process is done correctly
@@ -214,13 +214,16 @@ def final_preprocess(df, freq, aggregate_cols, sentiment_cols, use_textBlob, use
 
     if save_final_df:
         partial_file = os.path.splitext(save_path)
-        save_final_path = f'{partial_file[0]}_{start_date}_-_{end_date}{partial_file[1]}'
+        if save_path_add_date:
+            save_final_path = f'{partial_file[0]}_{start_date}_-_{end_date}{partial_file[1]}'
+        else:
+            save_final_path = f'{partial_file[0]}{partial_file[1]}'
         df.to_csv(save_final_path, sep=sep, index_label=timestamp_col)
 
     return df
 
 
-def tweets_preprocess(df, freq='min', sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS, aggregate_cols=['replies', 'likes', 'retweets'], start_date=None, end_date=None, timestamp_col='timestamp', datetime_format=DATETIME_FORMAT, save_path='data/preprocess/twitter.csv', save_final_df=True):
+def tweets_preprocess(df, freq='min', sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS, aggregate_cols=['replies', 'likes', 'retweets'], start_date=None, end_date=None, timestamp_col='timestamp', datetime_format=DATETIME_FORMAT, save_path='data/preprocess/twitter.csv', save_final_df=True, save_path_add_date=True):
     """Preprocess tweets adding sentiment columns, creating features and aggregating them at frequency level """
 
     initial_lenght = len(df.index)
@@ -231,12 +234,12 @@ def tweets_preprocess(df, freq='min', sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLU
         print(f"No data between starting date '{start_date}' and ending date '{end_date}'")
         return df
 
-    df = final_preprocess(df, freq, aggregate_cols, sentiment_cols, use_textBlob, use_vader, start_date, end_date, timestamp_col, save_path, save_final_df, sep='\t')
+    df = final_preprocess(df, freq, aggregate_cols, sentiment_cols, use_textBlob, use_vader, start_date, end_date, timestamp_col, save_path, save_final_df, sep='\t', save_path_add_date=save_path_add_date)
 
     return df
 
 
-def chunk_tweets_preprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS, aggregate_cols=[], start_date=None, end_date=None, timestamp_col='timestamp', datetime_format=DATETIME_FORMAT, nrows=None, chunksize=5e5, save_path='data/preprocess/twitter.csv', write_files=True, save_final_df=True):
+def chunk_tweets_preprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMNS+TEXTBLOB_COLUMNS, aggregate_cols=[], start_date=None, end_date=None, timestamp_col='timestamp', datetime_format=DATETIME_FORMAT, nrows=None, chunksize=5e5, save_path='data/preprocess/twitter.csv', write_files=True, save_final_df=True, save_path_add_date=True):
     """Preprocess on tweet historical data in chunks, adding sentiment columns and aggregating them depending on different weight columns by frequency
     """
 
@@ -307,7 +310,7 @@ def chunk_tweets_preprocess(tweets_path, freq='min', sentiment_cols=VADER_COLUMN
     else:
         all_df = pd.concat(all_list)
 
-    df = final_preprocess(all_df, freq, aggregate_cols, sentiment_cols, use_textBlob, use_vader, start_date, end_date, timestamp_col, save_path, save_final_df, sep='\t')
+    df = final_preprocess(all_df, freq, aggregate_cols, sentiment_cols, use_textBlob, use_vader, start_date, end_date, timestamp_col, save_path, save_final_df, sep='\t', save_path_add_date=save_path_add_date)
 
     return df
 
